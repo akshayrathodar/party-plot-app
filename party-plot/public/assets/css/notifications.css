@@ -1,0 +1,454 @@
+/* Notification Styles for Zono Theme */
+
+/* Notification Toggle */
+.notification-toggle {
+    position: relative;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.notification-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid #fff;
+}
+
+/* Notification Dropdown Menu */
+.notification-dropdown-menu {
+    width: 550px !important;
+    max-height: 600px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    margin-top: 10px;
+    padding: 0 !important;
+}
+
+/* Dark mode support */
+.dark-only .notification-dropdown-menu {
+    background: #2a2e39;
+    border-color: #404656;
+    color: #fff;
+}
+
+/* Notification Title Section */
+.notification-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.dark-only .notification-title-section {
+    background: #404656;
+    border-color: #4a5568;
+}
+
+.notification-title-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.dark-only .notification-title-text {
+    color: #fff;
+}
+
+.notification-count {
+    background: #007bff;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 16px;
+    text-align: center;
+    display: inline-block;
+}
+
+.notification-count:empty::before {
+    content: "0";
+}
+
+.dark-only .notification-count {
+    background: #3b82f6;
+}
+
+/* Notification List */
+.notification-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.notification-item {
+    padding: 8px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.dark-only .notification-item:hover {
+    background-color: #404656;
+}
+
+.dark-only .notification-item:hover {
+    background-color: #404656;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #e3f2fd;
+    border-left: 3px solid #2196f3;
+}
+
+.dark-only .notification-item.unread {
+    background-color: #1e3a5f;
+    border-left-color: #3b82f6;
+}
+
+.notification-item.read {
+    opacity: 0.7;
+}
+
+.notification-item.read:hover {
+    opacity: 1;
+}
+
+/* Dropdown Footer */
+.dropdown-footer {
+    padding: 8px 15px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.dark-only .dropdown-footer {
+    background: #404656;
+    border-color: #4a5568;
+}
+
+/* Notification Content */
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e3f2fd;
+    color: #2196f3;
+    font-size: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+.notification-icon i {
+    display: block !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.dark-only .notification-icon {
+    background: #1e3a5f;
+    color: #3b82f6;
+}
+
+/* Priority-based icon colors */
+.notification-item.priority-high .notification-icon {
+    background: #ffebee;
+    color: #f44336;
+}
+
+.dark-only .notification-item.priority-high .notification-icon {
+    background: #4a1f1f;
+    color: #ef4444;
+}
+
+.notification-item.priority-medium .notification-icon {
+    background: #fff3e0;
+    color: #ff9800;
+}
+
+.dark-only .notification-item.priority-medium .notification-icon {
+    background: #4a3a1f;
+    color: #f59e0b;
+}
+
+.notification-item.priority-low .notification-icon {
+    background: #e8f5e8;
+    color: #4caf50;
+}
+
+.dark-only .notification-item.priority-low .notification-icon {
+    background: #1f4a1f;
+    color: #10b981;
+}
+
+.notification-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-type-badge {
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dark-only .notification-type-badge {
+    background: #3b82f6;
+}
+
+/* Priority-based badge colors */
+.notification-item.priority-high .notification-type-badge {
+    background: #f44336;
+}
+
+.dark-only .notification-item.priority-high .notification-type-badge {
+    background: #ef4444;
+}
+
+.notification-item.priority-medium .notification-type-badge {
+    background: #ff9800;
+}
+
+.dark-only .notification-item.priority-medium .notification-type-badge {
+    background: #f59e0b;
+}
+
+.notification-item.priority-low .notification-type-badge {
+    background: #4caf50;
+}
+
+.dark-only .notification-item.priority-low .notification-type-badge {
+    background: #10b981;
+}
+
+.notification-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.dark-only .notification-text {
+    color: #fff;
+}
+
+
+
+.notification-time {
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.dark-only .notification-time {
+    color: #718096;
+}
+
+
+
+/* Priority-based item styling */
+.notification-item.priority-high {
+    border-left: 4px solid #f44336;
+    background-color: #fff5f5;
+}
+
+.dark-only .notification-item.priority-high {
+    background-color: #2d1b1b;
+    border-left-color: #ef4444;
+}
+
+.notification-item.priority-medium {
+    border-left: 4px solid #ff9800;
+    background-color: #fffbf0;
+}
+
+.dark-only .notification-item.priority-medium {
+    background-color: #2d261b;
+    border-left-color: #f59e0b;
+}
+
+.notification-item.priority-low {
+    border-left: 4px solid #4caf50;
+    background-color: #f0fff4;
+}
+
+.dark-only .notification-item.priority-low {
+    background-color: #1b2d1b;
+    border-left-color: #10b981;
+}
+
+/* Enhanced unread styling */
+.notification-item.unread.priority-high {
+    background-color: #ffebee;
+    border-left-color: #f44336;
+}
+
+.dark-only .notification-item.unread.priority-high {
+    background-color: #4a1f1f;
+    border-left-color: #ef4444;
+}
+
+.notification-item.unread.priority-medium {
+    background-color: #fff3e0;
+    border-left-color: #ff9800;
+}
+
+.dark-only .notification-item.unread.priority-medium {
+    background-color: #4a3a1f;
+    border-left-color: #f59e0b;
+}
+
+.notification-item.unread.priority-low {
+    background-color: #e8f5e8;
+    border-left-color: #4caf50;
+}
+
+.dark-only .notification-item.unread.priority-low {
+    background-color: #1f4a1f;
+    border-left-color: #10b981;
+}
+
+/* Empty State */
+.notification-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.empty-icon {
+    margin-bottom: 15px;
+}
+
+.empty-icon i {
+    font-size: 48px;
+    opacity: 0.3;
+    color: #ccc;
+}
+
+.empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.dark-only .empty-title {
+    color: #a0aec0;
+}
+
+.empty-message {
+    font-size: 13px;
+    color: #999;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.dark-only .empty-message {
+    color: #718096;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .notification-dropdown-menu {
+        width: 450px !important;
+        right: -50px;
+    }
+}
+
+@media (max-width: 576px) {
+    .notification-dropdown-menu {
+        width: 380px !important;
+        right: -80px;
+    }
+}
+
+/* Scrollbar Styling */
+.notification-list::-webkit-scrollbar {
+    width: 0px;
+    display: none;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: transparent;
+}
+
+.dark-only .notification-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dark-only .notification-list::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.dark-only .notification-list::-webkit-scrollbar-thumb:hover {
+    background: transparent;
+}
