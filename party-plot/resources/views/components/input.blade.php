@@ -2,7 +2,7 @@
     @isset($label)
         <label for="{{ $id ?? $name }}" class="form-label d-block {{ isset($labelClass)? $labelClass : '' }}">
             {!! $label ?? ucfirst(str_replace('_', ' ', $name)) !!}
-            @if ($required)
+            @if (isset($required) && $required)
                 <span class="text-danger">*</span>
             @endif
         </label>
@@ -15,7 +15,7 @@
             id="{{ $id ?? $name }}"
             value="{{ old($name, $value ?? '') }}"
             placeholder="{{ $placeholder ?? 'Enter '. str_replace('_', ' ', $name) }}"
-            {{ $required ? 'required' : '' }}
+            {{ (isset($required) && $required) ? 'required' : '' }}
             {{ $attributes->merge(['class' => 'form-control' . ( isset($errors) && $errors->has($name) ? ' is-invalid' : '')]) }}
         />
 
