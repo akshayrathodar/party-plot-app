@@ -102,3 +102,11 @@ Based on the cleaned CSV data:
 - Default category: "Party Plot" (if category not found in mapping)
 - Categories should be added to database via admin panel before CSV import
 
+
+
+
+
+
+
+
+

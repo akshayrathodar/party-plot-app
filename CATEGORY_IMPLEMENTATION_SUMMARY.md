@@ -139,3 +139,11 @@ The category system is now:
 - All categories stored in `suitable_events` field
 - Default category: "Party Plot" (if category not found)
 
+
+
+
+
+
+
+
+

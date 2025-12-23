@@ -139,3 +139,11 @@ The following Google My Business plot codes have been removed from addresses and
 
 The cleaned CSV is now ready for database import. All Google My Business plot codes have been removed, and addresses are in proper Indian format.
 
+
+
+
+
+
+
+
+

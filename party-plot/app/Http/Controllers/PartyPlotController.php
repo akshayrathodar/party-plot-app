@@ -20,7 +20,6 @@ class PartyPlotController extends Controller
     {
         $query = PartyPlot::with(['creator', 'claimedBy']);
 
-        // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -31,7 +30,6 @@ class PartyPlotController extends Controller
             });
         }
 
-        // Filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -58,7 +56,7 @@ class PartyPlotController extends Controller
         // Get unique cities for filter
         $cities = PartyPlot::distinct()->pluck('city')->filter()->sort()->values();
 
-        return view('party-plots.index', compact('partyPlots', 'cities'));
+        return view('admin.party-plots.index', compact('partyPlots', 'cities'));
     }
 
     /**
@@ -66,7 +64,7 @@ class PartyPlotController extends Controller
      */
     public function create()
     {
-        return view('party-plots.create');
+        return view('admin.party-plots.create');
     }
 
     /**
@@ -210,7 +208,7 @@ class PartyPlotController extends Controller
     public function edit($id)
     {
         $partyPlot = PartyPlot::findOrFail($id);
-        return view('party-plots.edit', compact('partyPlot'));
+        return view('admin.party-plots.edit', compact('partyPlot'));
     }
 
     /**
@@ -379,7 +377,7 @@ class PartyPlotController extends Controller
      */
     public function showCsvUpload()
     {
-        return view('party-plots.csv-upload');
+        return view('admin.party-plots.csv-upload');
     }
 
     /**
@@ -486,7 +484,7 @@ class PartyPlotController extends Controller
             session(['csv_import_data' => $csvData]);
             session(['csv_import_headers' => $headers]);
 
-            return view('party-plots.csv-preview', compact('csvData', 'headers'));
+            return view('admin.party-plots.csv-preview', compact('csvData', 'headers'));
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error reading CSV file: ' . $e->getMessage());

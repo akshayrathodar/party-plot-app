@@ -38,3 +38,11 @@ class DeleteRecentPartyPlots extends Seeder
     }
 }
 
+
+
+
+
+
+
+
+

@@ -103,6 +103,23 @@
 
                     <li class="sidebar-list">
                         <i class="fa fa-thumb-tack"> </i>
+                        <a class="sidebar-link sidebar-title @if (request()->routeIs('admin.categories.*')) active @endif" href="javascript:void(0)">
+                            <svg class="stroke-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                            </svg>
+                            <svg class="fill-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#fill-icons') }}"></use>
+                            </svg>
+                            <span>Categories</span>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li><a href="{{ route('admin.categories.index') }}">All Categories</a></li>
+                            <li><a href="{{ route('admin.categories.create') }}">Add New</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <i class="fa fa-thumb-tack"> </i>
                         <a class="sidebar-link @if (request()->routeIs('admin.leads.*')) active @endif"
                             href="{{ route('admin.leads.index') }}">
                             <svg class="stroke-icon">
@@ -113,6 +130,55 @@
                             </svg>
                             <span>Leads</span>
                         </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <i class="fa fa-thumb-tack"> </i>
+                        <a class="sidebar-link @if (request()->routeIs('admin.venue-requests.*')) active @endif"
+                            href="{{ route('admin.venue-requests.index') }}">
+                            <svg class="stroke-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#stroke-project') }}"></use>
+                            </svg>
+                            <svg class="fill-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#fill-project') }}"></use>
+                            </svg>
+                            <span>Venue Requests</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <i class="fa fa-thumb-tack"> </i>
+                        <a class="sidebar-link sidebar-title @if (request()->routeIs('admin.blogs.*')) active @endif" href="javascript:void(0)">
+                            <svg class="stroke-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#stroke-email') }}"></use>
+                            </svg>
+                            <svg class="fill-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#fill-email') }}"></use>
+                            </svg>
+                            <span>Blogs</span>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li><a href="{{ route('admin.blogs.index') }}">All Blogs</a></li>
+                            <li><a href="{{ route('admin.blogs.create') }}">Add New</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <i class="fa fa-thumb-tack"> </i>
+                        <a class="sidebar-link sidebar-title @if (request()->routeIs('admin.seo-links.*')) active @endif" href="javascript:void(0)">
+                            <svg class="stroke-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#stroke-editors') }}"></use>
+                            </svg>
+                            <svg class="fill-icon">
+                                <use href="{{ asset('assets/svg/icon-sprite.svg#fill-editors') }}"></use>
+                            </svg>
+                            <span>SEO Links</span>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li><a href="{{ route('admin.seo-links.index') }}">All SEO Links</a></li>
+                            <li><a href="{{ route('admin.seo-links.bulk-generate') }}">Bulk Generate</a></li>
+                            <li><a href="{{ route('admin.seo-links.templates') }}">Templates</a></li>
+                        </ul>
                     </li>
 
                     <li class="sidebar-main-title">

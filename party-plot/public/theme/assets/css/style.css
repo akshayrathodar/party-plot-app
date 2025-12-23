@@ -5,7 +5,7 @@ Support: https://www.account.egenslab.com/
 Developer: Abid Hossain Chowdhury --> hello@egenslab.com
 Version: 1.0
 
-01. COMMON CSS 
+01. COMMON CSS
 02. Mixins Css
 03. Header CSS
 04. Home1 Banner Section CSS
@@ -106,7 +106,7 @@ Version: 1.0
 
 
 /*===========================
-  01.COMMON CSS 
+  01.COMMON CSS
 ===========================*/
 @import url("https://fonts.googleapis.com/css2?family=Courgette&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 * {
@@ -1442,6 +1442,7 @@ body.tt-magic-cursor #magic-cursor {
   border-radius: 10px;
   padding-left: 20px;
   padding-right: 20px;
+  margin-bottom: 20px;
 }
 .nice-select:hover {
   border-color: var(--borders-color);
@@ -14635,6 +14636,9 @@ header.style-3.two .main-menu > ul > li.active > a i {
 }
 .home3-banner-section .banner-wrapper .banner-img-area {
   min-height: 775px;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
 }
 @media (min-width: 1400px) and (max-width: 1599px) {
   .home3-banner-section .banner-wrapper .banner-img-area {
@@ -14661,30 +14665,37 @@ header.style-3.two .main-menu > ul > li.active > a i {
   }
 }
 .home3-banner-section .banner-wrapper .banner-img-area img {
+  width: 100%;
   min-height: 775px;
+  height: 775px;
   -o-object-fit: cover;
      object-fit: cover;
+  display: block;
 }
 @media (min-width: 1400px) and (max-width: 1599px) {
   .home3-banner-section .banner-wrapper .banner-img-area img {
+    width: 100%;
     min-height: 680px;
     height: 680px;
   }
 }
 @media (max-width: 1399px) {
   .home3-banner-section .banner-wrapper .banner-img-area img {
+    width: 100%;
     min-height: 640px;
     height: 640px;
   }
 }
 @media (max-width: 1199px) {
   .home3-banner-section .banner-wrapper .banner-img-area img {
+    width: 100%;
     min-height: 600px;
     height: 600px;
   }
 }
 @media (max-width: 767px) {
   .home3-banner-section .banner-wrapper .banner-img-area img {
+    width: 100%;
     min-height: 580px;
     height: 580px;
   }
@@ -35749,3 +35760,7 @@ header.style-3.two .main-menu > ul > li.active > a i {
   line-height: 1;
   margin-left: 2px;
 }/*# sourceMappingURL=style.css.map */
+
+.enquiry-form-wrapper {
+    border: none !important;
+}

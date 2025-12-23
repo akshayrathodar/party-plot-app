@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PartyPlotController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\SeoLinkController;
 use App\Http\Middleware\authAdmin;
 use Illuminate\Support\Facades\Artisan;
 
@@ -35,8 +36,12 @@ Route::post('/contact', [ContactController::class, 'submit'])->name('contact.sub
 // Search
 Route::get('/search', [PageController::class, 'search'])->name('search');
 
+// SEO Links Routes (must be before party-plots to avoid route conflicts)
+Route::get('/venues/{slug}', [PageController::class, 'seoLink'])->name('seo-link.show');
+
 // Lead Submission (Public)
 Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
+Route::post('/venue-requests', [\App\Http\Controllers\VenueRequestController::class, 'store'])->name('venue-requests.store');
 
 // Party Plots Routes (to be implemented)
 Route::prefix('party-plots')->name('party-plots.')->group(function () {
@@ -44,6 +49,12 @@ Route::prefix('party-plots')->name('party-plots.')->group(function () {
     Route::get('/tag/{slug}', [PageController::class, 'partyPlotsByTag'])->name('tag');
     Route::get('/{slug}', [PageController::class, 'partyPlotDetails'])->name('show');
     Route::get('/create', [PageController::class, 'createPartyPlot'])->name('create');
+});
+
+// Blog Routes
+Route::prefix('blogs')->name('blogs.')->group(function () {
+    Route::get('/', [PageController::class, 'blogs'])->name('index');
+    Route::get('/{slug}', [PageController::class, 'blogDetails'])->name('show');
 });
 
 // Admin Panel Routes
@@ -125,6 +136,7 @@ Route::prefix('admin')->group(function () {
             'update' => 'admin.categories.update',
             'destroy' => 'admin.categories.destroy',
         ]);
+        Route::post('/categories/import-from-party-plots', [CategoryController::class, 'importFromPartyPlots'])->name('admin.categories.import');
 
         // Leads Routes
         Route::resource('leads', LeadController::class)->names([
@@ -133,6 +145,44 @@ Route::prefix('admin')->group(function () {
             'destroy' => 'admin.leads.destroy',
         ]);
         Route::post('/leads/{id}/update-status', [LeadController::class, 'updateStatus'])->name('admin.leads.updateStatus');
+
+        // Venue Requests Routes
+        Route::get('/venue-requests', [\App\Http\Controllers\VenueRequestController::class, 'index'])->name('admin.venue-requests.index');
+        Route::post('/venue-requests/{id}/update-status', [\App\Http\Controllers\VenueRequestController::class, 'updateStatus'])->name('admin.venue-requests.updateStatus');
+
+        // Blog Routes
+        Route::resource('blogs', \App\Http\Controllers\BlogController::class)->names([
+            'index' => 'admin.blogs.index',
+            'create' => 'admin.blogs.create',
+            'store' => 'admin.blogs.store',
+            'edit' => 'admin.blogs.edit',
+            'update' => 'admin.blogs.update',
+            'destroy' => 'admin.blogs.destroy',
+        ]);
+
+        // SEO Links Routes
+        Route::prefix('seo-links')->name('admin.seo-links.')->group(function () {
+            // Main CRUD
+            Route::get('/', [SeoLinkController::class, 'index'])->name('index');
+            Route::get('/create', [SeoLinkController::class, 'create'])->name('create');
+            Route::post('/', [SeoLinkController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [SeoLinkController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [SeoLinkController::class, 'update'])->name('update');
+            Route::delete('/{id}', [SeoLinkController::class, 'destroy'])->name('destroy');
+
+            // Bulk Generate
+            Route::get('/bulk-generate', [SeoLinkController::class, 'bulkGenerate'])->name('bulk-generate');
+            Route::post('/bulk-generate/preview', [SeoLinkController::class, 'previewBulkGenerate'])->name('bulk-generate.preview');
+            Route::post('/bulk-generate/execute', [SeoLinkController::class, 'executeBulkGenerate'])->name('bulk-generate.execute');
+
+            // Templates
+            Route::get('/templates', [SeoLinkController::class, 'templates'])->name('templates');
+            Route::get('/templates/create', [SeoLinkController::class, 'createTemplate'])->name('templates.create');
+            Route::post('/templates', [SeoLinkController::class, 'storeTemplate'])->name('templates.store');
+            Route::get('/templates/{id}/edit', [SeoLinkController::class, 'editTemplate'])->name('templates.edit');
+            Route::put('/templates/{id}', [SeoLinkController::class, 'updateTemplate'])->name('templates.update');
+            Route::delete('/templates/{id}', [SeoLinkController::class, 'destroyTemplate'])->name('templates.destroy');
+        });
 
         // Common Routes
         Route::get('/getDataById', [HomeController::class, 'getDataById'])->name('admin.getDataById');

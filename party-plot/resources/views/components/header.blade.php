@@ -21,7 +21,7 @@
                         </a>
                     </li>
                     <li class="menu-item-has-children {{ request()->routeIs('party-plots.*') ? 'active' : '' }}">
-                        <a href="#" class="drop-down">
+                        <a href="{{ route('party-plots.index') }}" class="drop-down">
                             All Venues
                         </a>
                     </li>
@@ -46,6 +46,25 @@
                         <a href="tel:919429076228">+91 94290 76228</a>
                     </div>
                 </div>
+                {{-- List Your Venue Button (Mobile) --}}
+                <a href="#" class="primary-btn1 d-xl-none d-flex" data-bs-toggle="modal" data-bs-target="#listVenueModal">
+                    <span>
+                        <svg width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M7.5 0C3.364 0 0 3.364 0 7.5C0 11.636 3.364 15 7.5 15C11.636 15 15 11.636 15 7.5C15 3.364 11.636 0 7.5 0ZM7.5 13.5C4.186 13.5 1.5 10.814 1.5 7.5C1.5 4.186 4.186 1.5 7.5 1.5C10.814 1.5 13.5 4.186 13.5 7.5C13.5 10.814 10.814 13.5 7.5 13.5ZM8.25 4.5H6.75V7.5H3.75V9H6.75V12H8.25V9H11.25V7.5H8.25V4.5Z"/>
+                            </g>
+                        </svg>
+                        List Free Venue
+                    </span>
+                    <span>
+                        <svg width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M7.5 0C3.364 0 0 3.364 0 7.5C0 11.636 3.364 15 7.5 15C11.636 15 15 11.636 15 7.5C15 3.364 11.636 0 7.5 0ZM7.5 13.5C4.186 13.5 1.5 10.814 1.5 7.5C1.5 4.186 4.186 1.5 7.5 1.5C10.814 1.5 13.5 4.186 13.5 7.5C13.5 10.814 10.814 13.5 7.5 13.5ZM8.25 4.5H6.75V7.5H3.75V9H6.75V12H8.25V9H11.25V7.5H8.25V4.5Z"/>
+                            </g>
+                        </svg>
+                        List Your Venue
+                    </span>
+                </a>
                 {{-- TODO: Add authentication routes when implementing login system --}}
                 <a href="#" class="primary-btn1 d-xl-none d-flex" onclick="alert('Login feature coming soon!'); return false;">
                     <span>
@@ -85,38 +104,25 @@
                         <a href="tel:919429076228">+91 94290 76228</a>
                     </div>
                 </div>
-                <div class="search-bar">
-                    <div class="search-btn">
-                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                {{-- List Your Venue Button --}}
+                <a href="#" class="primary-btn1 d-xl-flex d-none" data-bs-toggle="modal" data-bs-target="#listVenueModal">
+                    <span>
+                        <svg width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
                             <g>
-                                <path
-                                    d="M15.7417 14.6098L13.486 12.3621C14.7088 10.8514 15.3054 8.9291 15.1526 6.99153C14.9998 5.05396 14.1093 3.24888 12.6648 1.94851C11.2203 0.648146 9.33193 -0.0483622 7.38901 0.00261294C5.44609 0.0535881 3.59681 0.84816 2.22248 2.22248C0.84816 3.59681 0.0535881 5.44609 0.00261294 7.38901C-0.0483622 9.33193 0.648146 11.2203 1.94851 12.6648C3.24888 14.1093 5.05396 14.9998 6.99153 15.1526C8.9291 15.3054 10.8514 14.7088 12.3621 13.486L14.6098 15.7417C14.6839 15.8164 14.7721 15.8757 14.8692 15.9161C14.9664 15.9566 15.0705 15.9774 15.1758 15.9774C15.281 15.9774 15.3852 15.9566 15.4823 15.9161C15.5794 15.8757 15.6676 15.8164 15.7417 15.7417C15.8164 15.6676 15.8757 15.5794 15.9161 15.4823C15.9566 15.3852 15.9774 15.281 15.9774 15.1758C15.9774 15.0705 15.9566 14.9664 15.9161 14.8692C15.8757 14.7721 15.8164 14.6839 15.7417 14.6098ZM1.62572 7.60368C1.62572 6.42135 1.97632 5.26557 2.63319 4.2825C3.29005 3.29943 4.22368 2.53322 5.31601 2.08076C6.40834 1.62831 7.61031 1.50992 8.76992 1.74058C9.92953 1.97124 10.9947 2.54059 11.8307 3.37662C12.6668 4.21266 13.2361 5.27783 13.4668 6.43744C13.6974 7.59705 13.579 8.79902 13.1266 9.89134C12.6741 10.9837 11.9079 11.9173 10.9249 12.5742C9.94178 13.231 8.78601 13.5816 7.60368 13.5816C6.01822 13.5816 4.49771 12.9518 3.37662 11.8307C2.25554 10.7096 1.62572 9.18913 1.62572 7.60368Z"/>
+                                <path d="M7.5 0C3.364 0 0 3.364 0 7.5C0 11.636 3.364 15 7.5 15C11.636 15 15 11.636 15 7.5C15 3.364 11.636 0 7.5 0ZM7.5 13.5C4.186 13.5 1.5 10.814 1.5 7.5C1.5 4.186 4.186 1.5 7.5 1.5C10.814 1.5 13.5 4.186 13.5 7.5C13.5 10.814 10.814 13.5 7.5 13.5ZM8.25 4.5H6.75V7.5H3.75V9H6.75V12H8.25V9H11.25V7.5H8.25V4.5Z"/>
                             </g>
                         </svg>
-                    </div>
-                    <div class="search-input">
-                        <div class="search-close"></div>
-                        <form action="{{ route('search') }}" method="GET">
-                            <div class="search-group">
-                                <div class="form-inner2">
-                                    <input type="text" name="q" placeholder="Find Your Perfect Party Plot" value="{{ request('q') }}">
-                                    <button type="submit"><i class="bi bi-search"></i></button>
-                                </div>
-                            </div>
-                            <div class="quick-search">
-                                <ul>
-                                    <li>Quick Search :</li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Mumbai']) }}">Mumbai,</a></li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Delhi']) }}">Delhi,</a></li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Bangalore']) }}">Bangalore,</a></li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Pune']) }}">Pune,</a></li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Hyderabad']) }}">Hyderabad,</a></li>
-                                    <li><a href="{{ route('party-plots.index', ['city' => 'Chennai']) }}">Chennai,</a></li>
-                                </ul>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                        List Your Venue
+                    </span>
+                    <span>
+                        <svg width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M7.5 0C3.364 0 0 3.364 0 7.5C0 11.636 3.364 15 7.5 15C11.636 15 15 11.636 15 7.5C15 3.364 11.636 0 7.5 0ZM7.5 13.5C4.186 13.5 1.5 10.814 1.5 7.5C1.5 4.186 4.186 1.5 7.5 1.5C10.814 1.5 13.5 4.186 13.5 7.5C13.5 10.814 10.814 13.5 7.5 13.5ZM8.25 4.5H6.75V7.5H3.75V9H6.75V12H8.25V9H11.25V7.5H8.25V4.5Z"/>
+                            </g>
+                        </svg>
+                        List Your Venue
+                    </span>
+                </a>
                 {{-- TODO: Add authentication routes when implementing login system --}}
                 <a href="#" class="primary-btn1 d-xl-flex d-none" onclick="alert('Login feature coming soon!'); return false;">
                     <span>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\PartyPlot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -14,7 +16,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Category::query();
+        $query = Category::withCount('partyPlots');
 
         // Search
         if ($request->filled('search')) {
@@ -36,7 +38,7 @@ class CategoryController extends Controller
                            ->orderBy('name', 'asc')
                            ->paginate(20);
 
-        return view('categories.index', compact('categories'));
+        return view('admin.categories.index', compact('categories'));
     }
 
     /**
@@ -44,7 +46,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return view('categories.create');
+        return view('admin.categories.create');
     }
 
     /**
@@ -57,7 +59,7 @@ class CategoryController extends Controller
             'slug' => 'nullable|string|max:255|unique:categories,slug',
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
             'meta_title' => 'nullable|string|max:255',
@@ -71,27 +73,43 @@ class CategoryController extends Controller
                            ->withInput();
         }
 
-        $data = $validator->validated();
+        try {
+            $data = $request->except(['image', '_token']);
 
-        // Auto-generate slug if not provided
-        if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            // Auto-generate slug if not provided
+            if (empty($data['slug'])) {
+                $data['slug'] = Str::slug($data['name']);
 
-            // Ensure uniqueness
-            $originalSlug = $data['slug'];
-            $count = 1;
-            while (Category::where('slug', $data['slug'])->exists()) {
-                $data['slug'] = $originalSlug . '-' . $count;
-                $count++;
+                // Ensure uniqueness
+                $originalSlug = $data['slug'];
+                $count = 1;
+                while (Category::where('slug', $data['slug'])->exists()) {
+                    $data['slug'] = $originalSlug . '-' . $count;
+                    $count++;
+                }
             }
+
+            $data['is_active'] = $request->has('is_active') ? true : false;
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $data['image'] = uploadFile(
+                    $request->file('image'),
+                    'category',
+                    'categories',
+                    'admin'
+                );
+            }
+
+            Category::create($data);
+
+            return redirect()->route('admin.categories.index')
+                            ->with('success', 'Category created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Error creating category: ' . $e->getMessage())
+                           ->withInput();
         }
-
-        $data['is_active'] = $request->has('is_active') ? true : false;
-
-        Category::create($data);
-
-        return redirect()->route('admin.categories.index')
-                        ->with('success', 'Category created successfully.');
     }
 
     /**
@@ -99,8 +117,8 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = Category::findOrFail($id);
-        return view('categories.show', compact('category'));
+        $category = Category::withCount('partyPlots')->findOrFail($id);
+        return view('admin.categories.show', compact('category'));
     }
 
     /**
@@ -109,7 +127,7 @@ class CategoryController extends Controller
     public function edit($id)
     {
         $category = Category::findOrFail($id);
-        return view('categories.edit', compact('category'));
+        return view('admin.categories.edit', compact('category'));
     }
 
     /**
@@ -124,7 +142,7 @@ class CategoryController extends Controller
             'slug' => 'nullable|string|max:255|unique:categories,slug,' . $id,
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
             'meta_title' => 'nullable|string|max:255',
@@ -138,27 +156,52 @@ class CategoryController extends Controller
                            ->withInput();
         }
 
-        $data = $validator->validated();
+        try {
+            $data = $request->except(['image', '_token', '_method']);
 
-        // Auto-generate slug if name changed and slug is empty
-        if ($category->name !== $data['name'] && empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            // Auto-generate slug if name changed and slug is empty
+            if ($category->name !== $data['name'] && empty($data['slug'])) {
+                $data['slug'] = Str::slug($data['name']);
 
-            // Ensure uniqueness
-            $originalSlug = $data['slug'];
-            $count = 1;
-            while (Category::where('slug', $data['slug'])->where('id', '!=', $id)->exists()) {
-                $data['slug'] = $originalSlug . '-' . $count;
-                $count++;
+                // Ensure uniqueness
+                $originalSlug = $data['slug'];
+                $count = 1;
+                while (Category::where('slug', $data['slug'])->where('id', '!=', $id)->exists()) {
+                    $data['slug'] = $originalSlug . '-' . $count;
+                    $count++;
+                }
             }
+
+            $data['is_active'] = $request->has('is_active') ? true : false;
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $data['image'] = uploadFile(
+                    $request->file('image'),
+                    'category',
+                    'categories',
+                    'admin',
+                    $category->image // Delete old image
+                );
+            }
+
+            // Handle image removal
+            if ($request->has('remove_image') && $request->remove_image == '1') {
+                if ($category->image) {
+                    unlinkFile($category->image, 'categories', 'admin');
+                }
+                $data['image'] = null;
+            }
+
+            $category->update($data);
+
+            return redirect()->route('admin.categories.index')
+                            ->with('success', 'Category updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Error updating category: ' . $e->getMessage())
+                           ->withInput();
         }
-
-        $data['is_active'] = $request->has('is_active') ? true : false;
-
-        $category->update($data);
-
-        return redirect()->route('admin.categories.index')
-                        ->with('success', 'Category updated successfully.');
     }
 
     /**
@@ -166,18 +209,82 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
+        try {
+            $category = Category::findOrFail($id);
 
-        // Check if category has party plots
-        if ($category->partyPlots()->count() > 0) {
+            // Check if category has party plots
+            if ($category->partyPlots()->count() > 0) {
+                return redirect()->route('admin.categories.index')
+                              ->with('error', 'Cannot delete category. It has ' . $category->partyPlots()->count() . ' associated party plots. Please reassign them first.');
+            }
+
+            // Delete image if exists
+            if ($category->image) {
+                unlinkFile($category->image, 'categories', 'admin');
+            }
+
+            $category->delete();
+
             return redirect()->route('admin.categories.index')
-                          ->with('error', 'Cannot delete category. It has associated party plots.');
+                            ->with('success', 'Category deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Error deleting category: ' . $e->getMessage());
         }
+    }
 
-        $category->delete();
+    /**
+     * Import categories from existing party plots suitable_events field
+     */
+    public function importFromPartyPlots()
+    {
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.categories.index')
-                        ->with('success', 'Category deleted successfully.');
+            // Get all unique category names from party_plots suitable_events
+            $partyPlots = PartyPlot::whereNotNull('suitable_events')
+                ->where('suitable_events', '!=', '')
+                ->get();
+
+            $categoryNames = [];
+            foreach ($partyPlots as $plot) {
+                $events = $plot->suitable_events_array;
+                foreach ($events as $event) {
+                    $event = trim($event);
+                    if (!empty($event)) {
+                        $categoryNames[$event] = true;
+                    }
+                }
+            }
+
+            $created = 0;
+            $existing = 0;
+
+            foreach (array_keys($categoryNames) as $categoryName) {
+                // Check if category already exists
+                $existingCategory = Category::where('name', $categoryName)->first();
+                
+                if (!$existingCategory) {
+                    Category::create([
+                        'name' => $categoryName,
+                        'slug' => Str::slug($categoryName),
+                        'is_active' => true,
+                        'sort_order' => 0,
+                    ]);
+                    $created++;
+                } else {
+                    $existing++;
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.categories.index')
+                            ->with('success', "Import completed. Created: {$created} categories. Already existing: {$existing}.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                           ->with('error', 'Error importing categories: ' . $e->getMessage());
+        }
     }
 }
-

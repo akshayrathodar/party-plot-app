@@ -7,7 +7,7 @@
     <div class="home3-banner-section">
         <div class="swiper home2-banner-slider">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
+                {{-- <div class="swiper-slide">
                     <div class="banner-wrapper">
                         <div class="banner-video-area">
                             <video autoplay loop muted playsinline src="{{ asset('theme/assets/video/home2-banner-video.mp4') }}"></video>
@@ -21,11 +21,11 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <div class="swiper-slide">
                     <div class="banner-wrapper">
                         <div class="banner-img-area">
-                            <img src="{{ asset('theme/assets/img/home3/banner-img1.jpg') }}" alt="">
+                            <img src="{{ asset('assets/images/partyplot.gif') }}" alt="">
                         </div>
                         <div class="banner-content-wrap">
                             <div class="container">
@@ -40,7 +40,22 @@
                 <div class="swiper-slide">
                     <div class="banner-wrapper">
                         <div class="banner-img-area">
-                            <img src="{{ asset('theme/assets/img/home3/banner-img2.jpg') }}" alt="">
+                            <img src="{{ asset('assets/images/wedding mandap 2.jpg') }}" alt="">
+                        </div>
+                        <div class="banner-content-wrap">
+                            <div class="container">
+                                <div class="banner-content">
+                                    <h2>Luxury Venues, Tailored for You</h2>
+                                    <p>Explore venues with care, enriched by quality and confidence.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="banner-wrapper">
+                        <div class="banner-img-area">
+                            <img src="{{ asset('assets/images/wedding mandap bg.jpg') }}" alt="">
                         </div>
                         <div class="banner-content-wrap">
                             <div class="container">
@@ -654,6 +669,102 @@
 
     <!-- home1 offer Section Start-->
 
+    <!-- Categories Section -->
+    @if(isset($categoriesWithCounts) && $categoriesWithCounts->count() > 0)
+    <div class="home2-destination-section mb-100">
+        <div class="container">
+            <div class="section-title text-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms" style="visibility: visible; animation-duration: 1500ms; animation-delay: 200ms;">
+                <h2>Browse by Category</h2>
+            </div>
+            <div class="destination-slider-area">
+                <div class="swiper home2-category-slider">
+                    <div class="swiper-wrapper">
+                        @foreach($categoriesWithCounts as $category)
+                        <div class="swiper-slide">
+                            <div class="destination-card2">
+                                <a href="{{ route('party-plots.index', ['category' => $category->id]) }}" class="destination-img">
+                                    @php
+                                        $categoryImage = '';
+                                        if ($category->image && trim($category->image) !== '') {
+                                            if (filter_var($category->image, FILTER_VALIDATE_URL)) {
+                                                $categoryImage = $category->image;
+                                            } elseif (file_exists(public_path('uploads/admin/categories/' . $category->image))) {
+                                                $categoryImage = asset('uploads/admin/categories/' . $category->image);
+                                            } elseif (file_exists(public_path('uploads/categories/' . $category->image))) {
+                                                $categoryImage = asset('uploads/categories/' . $category->image);
+                                            } elseif (file_exists(public_path($category->image))) {
+                                                $categoryImage = asset($category->image);
+                                            } elseif (file_exists(storage_path('app/public/' . $category->image))) {
+                                                $categoryImage = asset('storage/' . $category->image);
+                                            }
+                                        }
+
+                                        // If no image, try to get a featured image from a party plot in this category
+                                        if (empty($categoryImage)) {
+                                            $categoryPlot = \App\Models\PartyPlot::where('category_id', $category->id)
+                                                ->where('status', 'active')
+                                                ->whereIn('listing_status', ['approved', 'pending'])
+                                                ->whereNotNull('featured_image')
+                                                ->where('featured_image', '!=', '')
+                                                ->where('featured_image', '!=', 'null')
+                                                ->orderBy('created_at', 'desc')
+                                                ->first();
+
+                                            if ($categoryPlot && $categoryPlot->featured_image) {
+                                                if (filter_var($categoryPlot->featured_image, FILTER_VALIDATE_URL)) {
+                                                    $categoryImage = $categoryPlot->featured_image;
+                                                } elseif (file_exists(public_path('uploads/admin/party-plots/' . $categoryPlot->featured_image))) {
+                                                    $categoryImage = asset('uploads/admin/party-plots/' . $categoryPlot->featured_image);
+                                                } elseif (file_exists(public_path($categoryPlot->featured_image))) {
+                                                    $categoryImage = asset($categoryPlot->featured_image);
+                                                }
+                                            }
+                                        }
+                                    @endphp
+                                    @if($categoryImage)
+                                        <img src="{{ $categoryImage }}" alt="{{ $category->name }}">
+                                    @else
+                                        <div class="category-placeholder">
+                                            @if($category->icon)
+                                                <i class="{{ $category->icon }}" style="font-size: 48px;"></i>
+                                            @else
+                                                <i class="fa-solid fa-building" style="font-size: 48px;"></i>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </a>
+                                <div class="destination-content">
+                                    <h5><a href="{{ route('party-plots.index', ['category' => $category->id]) }}">{{ $category->name }}</a></h5>
+                                    <span>{{ $category->party_plots_count }} {{ $category->party_plots_count == 1 ? 'Venue' : 'Venues' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="slider-btn-grp two">
+                    <div class="slider-btn category-slider-prev">
+                        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M0 5.31421H16V6.68564H0V5.31421Z"></path>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.685714 6.68569C3.9104 6.68569 6.54629 3.84958 6.54629 0.825119V0.139404H5.17486V0.825119C5.17486 3.12181 3.12412 5.31426 0.685714 5.31426H0V6.68569H0.685714Z"></path>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.685714 5.31421C3.9104 5.31421 6.54629 8.15032 6.54629 11.1748V11.8605H5.17486V11.1748C5.17486 8.87901 3.12412 6.68564 0.685714 6.68564H0V5.31421H0.685714Z"></path>
+                        </svg>
+                    </div>
+                    <div class="slider-btn category-slider-next">
+                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M16 7.31421H-3.8147e-06V8.68564H16V7.31421Z"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M15.3143 8.68569C12.0896 8.68569 9.45371 5.84958 9.45371 2.82512V2.1394H10.8251V2.82512C10.8251 5.12181 12.8759 7.31426 15.3143 7.31426H16V8.68569H15.3143Z"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M15.3143 7.31421C12.0896 7.31421 9.45371 10.1503 9.45371 13.1748V13.8605H10.8251V13.1748C10.8251 10.879 12.8759 8.68564 15.3143 8.68564H16V7.31421H15.3143Z"></path>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="home2-destination-section mb-100">
         <div class="container">
             <div class="section-title text-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms" style="visibility: visible; animation-duration: 1500ms; animation-delay: 200ms;">
@@ -669,6 +780,28 @@
                                 </a>
                                 <div class="destination-content">
                                     <h5><a href="{{ route('party-plots.index', ['city' => 'Rajkot']) }}">Rajkot</a></h5>
+                                    <span>Venues</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="destination-card2">
+                                <a href="{{ route('party-plots.index', ['city' => 'Jamnagar']) }}" class="destination-img">
+                                    <img src="{{ asset('assets/cities/jamnagar.jpg') }}" alt="Jamnagar">
+                                </a>
+                                <div class="destination-content">
+                                    <h5><a href="{{ route('party-plots.index', ['city' => 'Jamnagar']) }}">Jamnagar</a></h5>
+                                    <span>Venues</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="destination-card2">
+                                <a href="{{ route('party-plots.index', ['city' => 'Ahmedabad']) }}" class="destination-img">
+                                    <img src="{{ asset('assets/cities/ahmedabad.jpg') }}" alt="Ahmedabad">
+                                </a>
+                                <div class="destination-content">
+                                    <h5><a href="{{ route('party-plots.index', ['city' => 'Ahmedabad']) }}">Ahmedabad</a></h5>
                                     <span>Venues</span>
                                 </div>
                             </div>
@@ -697,7 +830,135 @@
         </div>
     </div>
 
-    <div class="home1-offer-section mb-100">
+    <!-- Popular Party Plots Section -->
+    @if(isset($popularPlots) && $popularPlots->count() > 0)
+    <div class="home1-travel-package-section mb-100">
+        <div class="container">
+            <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
+                <div class="col-xl-6 col-lg-8">
+                    <div class="section-title text-center">
+                        <h2>Popular Venues</h2>
+                        <p>Discover the most viewed and popular party plots and venues in your area.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row gy-lg-5 gy-4">
+                @foreach($popularPlots as $index => $plot)
+                <div class="col-lg-4 col-md-6 wow animate fadeInDown" data-wow-delay="{{ ($index % 3) * 200 }}ms" data-wow-duration="1500ms">
+                    <div class="package-card">
+                        <div class="package-img-wrap">
+                            <a href="{{ route('party-plots.show', $plot->slug) }}" class="package-img">
+                                @php
+                                    $imageUrl = '';
+                                    // First try featured image
+                                    if ($plot->featured_image && trim($plot->featured_image) !== '') {
+                                        if (filter_var($plot->featured_image, FILTER_VALIDATE_URL)) {
+                                            $imageUrl = $plot->featured_image;
+                                        } elseif (strpos($plot->featured_image, 'http') === 0) {
+                                            $imageUrl = $plot->featured_image;
+                                        } else {
+                                            $adminPath = 'uploads/admin/party-plots/' . $plot->featured_image;
+                                            if (file_exists(public_path($adminPath))) {
+                                                $imageUrl = asset($adminPath);
+                                            } elseif (file_exists(public_path($plot->featured_image))) {
+                                                $imageUrl = asset($plot->featured_image);
+                                            } elseif (file_exists(storage_path('app/public/' . $plot->featured_image))) {
+                                                $imageUrl = asset('storage/' . $plot->featured_image);
+                                            }
+                                        }
+                                    }
+
+                                    // If no featured image, try gallery images
+                                    if (empty($imageUrl) && $plot->gallery_images && is_array($plot->gallery_images) && count($plot->gallery_images) > 0) {
+                                        foreach ($plot->gallery_images as $galleryImg) {
+                                            if (filter_var($galleryImg, FILTER_VALIDATE_URL)) {
+                                                $imageUrl = $galleryImg;
+                                                break;
+                                            } elseif (strpos($galleryImg, 'http') === 0) {
+                                                $imageUrl = $galleryImg;
+                                                break;
+                                            } else {
+                                                $adminPath = 'uploads/admin/party-plots/' . $galleryImg;
+                                                if (file_exists(public_path($adminPath))) {
+                                                    $imageUrl = asset($adminPath);
+                                                    break;
+                                                } elseif (file_exists(public_path($galleryImg))) {
+                                                    $imageUrl = asset($galleryImg);
+                                                    break;
+                                                } elseif (file_exists(storage_path('app/public/' . $galleryImg))) {
+                                                    $imageUrl = asset('storage/' . $galleryImg);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @if($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $plot->name }}">
+                                @else
+                                    <img src="{{ asset('theme/assets/img/home1/tour-package-img1.jpg') }}" alt="{{ $plot->name }}">
+                                @endif
+                            </a>
+                            @if($plot->verified)
+                            <div class="batch">
+                                <span><i class="fa-solid fa-check-circle"></i> Verified</span>
+                            </div>
+                            @endif
+                            @if($plot->price_range_min || $plot->price_range_max)
+                            <div class="price-badge">
+                                <span>₹{{ number_format($plot->price_range_min ?? $plot->price_range_max) }}</span>
+                            </div>
+                            @endif
+                        </div>
+                        <div class="package-content">
+                            <h5><a href="{{ route('party-plots.show', $plot->slug) }}">{{ $plot->name }}</a></h5>
+                            <div class="location-and-time">
+                                <div class="location">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6.83615 0C3.77766 0 1.28891 2.48879 1.28891 5.54892C1.28891 7.93837 4.6241 11.8351 6.05811 13.3994C6.25669 13.6175 6.54154 13.7411 6.83615 13.7411C7.13076 13.7411 7.41561 13.6175 7.6142 13.3994C9.04821 11.8351 12.3834 7.93833 12.3834 5.54892C12.3834 2.48879 9.89464 0 6.83615 0ZM6.83615 8.5C5.73158 8.5 4.83615 7.60457 4.83615 6.5C4.83615 5.39543 5.73158 4.5 6.83615 4.5C7.94072 4.5 8.83615 5.39543 8.83615 6.5C8.83615 7.60457 7.94072 8.5 6.83615 8.5Z"/>
+                                    </svg>
+                                    <span>{{ $plot->city ?? 'Location' }}</span>
+                                </div>
+                                @if($plot->visitors)
+                                <div class="time">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7 0C3.13401 0 0 3.13401 0 7C0 10.866 3.13401 14 7 14C10.866 14 14 10.866 14 7C14 3.13401 10.866 0 7 0ZM7 12.6C4.1863 12.6 1.9 10.3137 1.9 7.5C1.9 4.6863 4.1863 2.4 7 2.4C9.8137 2.4 12.1 4.6863 12.1 7.5C12.1 10.3137 9.8137 12.6 7 12.6ZM7.35 4.2H6.3V7.7L9.1 9.45L9.8 8.55L7.35 7.15V4.2Z"/>
+                                    </svg>
+                                    <span>{{ number_format($plot->visitors) }} views</span>
+                                </div>
+                                @endif
+                            </div>
+                            @if($plot->description)
+                            <p>{{ Str::limit(strip_tags($plot->description), 100) }}</p>
+                            @endif
+                            <div class="package-info">
+                                @if($plot->capacity_min || $plot->capacity_max)
+                                <div class="package-info-item">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0ZM8 14.4C4.46538 14.4 1.6 11.5346 1.6 8C1.6 4.46538 4.46538 1.6 8 1.6C11.5346 1.6 14.4 4.46538 14.4 8C14.4 11.5346 11.5346 14.4 8 14.4Z" fill="currentColor"/>
+                                        <path d="M8.4 4H7.2V8.8L11.2 10.6L11.8 9.4L8.4 7.8V4Z" fill="currentColor"/>
+                                    </svg>
+                                    <span>{{ $plot->capacity_min ?? '0' }}-{{ $plot->capacity_max ?? 'N/A' }} guests</span>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="btn-and-price-area">
+                                <a href="{{ route('party-plots.show', $plot->slug) }}" class="primary-btn1">
+                                    <span>View Details</span>
+                                    <span>View Details</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Discounts & Offers Section - Commented Out --}}
+    {{-- <div class="home1-offer-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
                 <div class="col-lg-6">
@@ -732,10 +993,11 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 offer Section End-->
 
-    <!-- home1 destination Section Start-->
+    {{-- Featured Destinations Section - Commented Out --}}
+    {{-- <!-- home1 destination Section Start-->
     <div class="home1-destination-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-60 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -1578,12 +1840,13 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 detination Section End-->
 
 
 
-    <!-- home1 travel package Section Start-->
+    {{-- Popular Travel Package Section - Commented Out --}}
+    {{-- <!-- home1 travel package Section Start-->
     <div class="home1-travel-package-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -2255,29 +2518,29 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 travel package Section End-->
 
     <!-- home1 offer banner Section Start-->
     <div class="home1-offer-banner-section mb-100" style="background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 100%), url(assets/img/home1/home1-offer-banner-bg.jpg);">
         <div class="container">
             <div class="banner-content">
-                <span>Make Meet Happiness.</span>
-                <h2>Travel isn’t a luxury, it’s a way of life!</h2>
+                <span>Create Memorable Moments.</span>
+                <h2>Your perfect venue isn't just a place, it's where memories are made!</h2>
                 <div class="author-area">
-                    <h5>Mr. Gabriel Haringson</h5>
-                    <span>CEO, GoFly</span>
+                    <h5>Find Your Dream Venue</h5>
+                    <span>Party Plots, Banquet Halls & Event Venues</span>
                 </div>
-                <a href="travel-package-01.html" class="primary-btn1 two">
+                <a href="{{ route('party-plots.index') }}" class="primary-btn1 two">
                     <span>
-                        Grab the Deal Now
+                        Explore Venues
                         <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M9.73535 1.14746C9.57033 1.97255 9.32924 3.26406 9.24902 4.66797C9.16817 6.08312 9.25559 7.5453 9.70214 8.73633C9.84754 9.12406 9.65129 9.55659 9.26367 9.70215C8.9001 9.83849 8.4969 9.67455 8.32812 9.33398L8.29785 9.26367L8.19921 8.98438C7.73487 7.5758 7.67054 5.98959 7.75097 4.58203C7.77875 4.09598 7.82525 3.62422 7.87988 3.17969L1.53027 9.53027C1.23738 9.82317 0.762615 9.82317 0.469722 9.53027C0.176829 9.23738 0.176829 8.76262 0.469722 8.46973L6.83593 2.10254C6.3319 2.16472 5.79596 2.21841 5.25 2.24902C3.8302 2.32862 2.2474 2.26906 0.958003 1.79102L0.704097 1.68945L0.635738 1.65527C0.303274 1.47099 0.157578 1.06102 0.310542 0.704102C0.463655 0.347333 0.860941 0.170391 1.22363 0.28418L1.29589 0.310547L1.48828 0.387695C2.47399 0.751207 3.79966 0.827571 5.16601 0.750977C6.60111 0.670504 7.97842 0.428235 8.86132 0.262695L9.95312 0.0585938L9.73535 1.14746Z"/>
                         </svg>
                     </span>
                     <span>
-                        Grab the Deal Now
+                        Explore Venues
                         <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M9.73535 1.14746C9.57033 1.97255 9.32924 3.26406 9.24902 4.66797C9.16817 6.08312 9.25559 7.5453 9.70214 8.73633C9.84754 9.12406 9.65129 9.55659 9.26367 9.70215C8.9001 9.83849 8.4969 9.67455 8.32812 9.33398L8.29785 9.26367L8.19921 8.98438C7.73487 7.5758 7.67054 5.98959 7.75097 4.58203C7.77875 4.09598 7.82525 3.62422 7.87988 3.17969L1.53027 9.53027C1.23738 9.82317 0.762615 9.82317 0.469722 9.53027C0.176829 9.23738 0.176829 8.76262 0.469722 8.46973L6.83593 2.10254C6.3319 2.16472 5.79596 2.21841 5.25 2.24902C3.8302 2.32862 2.2474 2.26906 0.958003 1.79102L0.704097 1.68945L0.635738 1.65527C0.303274 1.47099 0.157578 1.06102 0.310542 0.704102C0.463655 0.347333 0.860941 0.170391 1.22363 0.28418L1.29589 0.310547L1.48828 0.387695C2.47399 0.751207 3.79966 0.827571 5.16601 0.750977C6.60111 0.670504 7.97842 0.428235 8.86132 0.262695L9.95312 0.0585938L9.73535 1.14746Z"/>
@@ -2289,7 +2552,8 @@
     </div>
     <!-- home1 offer banner Section End-->
 
-    <!-- home1 offer package Section Start-->
+    {{-- Last Minute Deals Section - Commented Out --}}
+    {{-- <!-- home1 offer package Section Start-->
     <div class="home1-offer-package-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -2626,7 +2890,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 offer package Section End-->
 
     <!-- home1 location search Section Start-->
@@ -2634,8 +2898,8 @@
         <div class="container">
             <div class="location-search-wrapper">
                 <div class="location-search-content">
-                    <h2>Customize Your Travel Package!</h2>
-                    <form class="location-search-area">
+                    <h2>Find Your Perfect Venue!</h2>
+                    <form class="location-search-area" action="{{ route('party-plots.index') }}" method="GET">
                         <div class="search-area">
                             <div class="dropdown" id="search_vendor">
                                 <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -2646,31 +2910,35 @@
                                             d="M17.4601 8.4599H16.2564C15.9858 4.86535 13.1291 2.00812 9.53458 1.7372V0.539976C9.53458 0.241723 9.29268 0 8.9946 0C8.69635 0 8.45462 0.241723 8.45462 0.539976V1.7372C4.85986 2.00812 2.00297 4.86535 1.73235 8.4599H0.540018C0.241723 8.4599 0 8.7017 0 8.99987C0 9.29813 0.241723 9.53985 0.539976 9.53985H1.73239C2.00297 13.1344 4.85991 15.9916 8.45441 16.2625V17.4601C8.45441 17.7583 8.69614 18 8.99439 18C9.29251 18 9.53428 17.7583 9.53428 17.4601V16.2625C13.1289 15.9918 15.9858 13.1346 16.2564 9.53985H17.4601C17.7583 9.53985 18 9.29813 18 8.99987C18 8.70175 17.7583 8.4599 17.4601 8.4599ZM8.99443 15.2096C5.56504 15.2094 2.78509 12.4291 2.78509 8.9997C2.78522 5.57014 5.56554 2.7902 8.99494 2.7902C12.4245 2.7902 15.2046 5.57048 15.2046 8.99987C15.2005 12.428 12.4225 15.2058 8.99443 15.2096Z"/>
                                     </g>
                                 </svg>
-                                <input type="text" class="dropdown-search" placeholder="Select Your Location">
+                                <input type="text" class="dropdown-search" name="city" placeholder="Select Your City" id="city-search-input">
                                 <ul class="dropdown-list">
                                     <li class="not-found" style="display: none;">Results Not Found!</li>
-                                    <li>Cox's Bazar, BD</li>
-                                    <li>Bangkok, TH</li>
-                                    <li>Dubai, AE</li>
-                                    <li>Singapore, SG</li>
-                                    <li>Paris, FR</li>
-                                    <li>London, UK</li>
-                                    <li>New York, US</li>
-                                    <li>Toronto, CA</li>
-                                    <li>Male, MV</li>
-                                    <li>Tokyo, JP</li>
-                                    <li>Kuala Lumpur, MY</li>
-                                    <li>Delhi, IN</li>
+                                    @if(isset($cities) && $cities->count() > 0)
+                                        @foreach($cities as $city)
+                                            <li data-city="{{ $city }}">{{ $city }}</li>
+                                        @endforeach
+                                    @else
+                                        <li>Mumbai</li>
+                                        <li>Delhi</li>
+                                        <li>Bangalore</li>
+                                        <li>Hyderabad</li>
+                                        <li>Chennai</li>
+                                        <li>Pune</li>
+                                        <li>Kolkata</li>
+                                        <li>Ahmedabad</li>
+                                        <li>Jaipur</li>
+                                        <li>Surat</li>
+                                    @endif
                                 </ul>
                             </div>
-                            <a href="travel-package-01.html" class="primary-btn1">
+                            <button type="submit" class="primary-btn1">
                                 <span>
-                                    Search Now
+                                    Search Venues
                                 </span>
                                 <span>
-                                    Search Now
+                                    Search Venues
                                 </span>
-                            </a>
+                            </button>
                         </div>
                     </form>
                     <ul>
@@ -2680,7 +2948,7 @@
                                 <path
                                     d="M13.6193 7.07207L8.05903 12.6354C7.97043 12.721 7.85813 12.7654 7.74593 12.7654C7.68772 12.7655 7.63008 12.754 7.57632 12.7317C7.52256 12.7094 7.47376 12.6767 7.43272 12.6354L4.38073 9.58337C4.20642 9.41197 4.20642 9.13137 4.38073 8.95707L5.45912 7.87567C5.62462 7.71027 5.92002 7.71027 6.08552 7.87567L7.74593 9.53607L11.9146 5.36438C11.9557 5.32322 12.0045 5.29055 12.0581 5.26825C12.1118 5.24594 12.1694 5.23443 12.2275 5.23438C12.3456 5.23438 12.4579 5.28168 12.5406 5.36438L13.619 6.44587C13.7936 6.62017 13.7936 6.90077 13.6193 7.07207Z"/>
                             </svg>
-                            Make Your Favourite Package
+                            Find Your Dream Venue
                         </li>
                          <li>
                             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -2688,7 +2956,7 @@
                                 <path
                                     d="M13.6193 7.07207L8.05903 12.6354C7.97043 12.721 7.85813 12.7654 7.74593 12.7654C7.68772 12.7655 7.63008 12.754 7.57632 12.7317C7.52256 12.7094 7.47376 12.6767 7.43272 12.6354L4.38073 9.58337C4.20642 9.41197 4.20642 9.13137 4.38073 8.95707L5.45912 7.87567C5.62462 7.71027 5.92002 7.71027 6.08552 7.87567L7.74593 9.53607L11.9146 5.36438C11.9557 5.32322 12.0045 5.29055 12.0581 5.26825C12.1118 5.24594 12.1694 5.23443 12.2275 5.23438C12.3456 5.23438 12.4579 5.28168 12.5406 5.36438L13.619 6.44587C13.7936 6.62017 13.7936 6.90077 13.6193 7.07207Z"/>
                             </svg>
-                            Easily Customize Tours
+                            Easy Booking Process
                         </li>
                         <li>
                             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -2696,12 +2964,12 @@
                                 <path
                                     d="M13.6193 7.07207L8.05903 12.6354C7.97043 12.721 7.85813 12.7654 7.74593 12.7654C7.68772 12.7655 7.63008 12.754 7.57632 12.7317C7.52256 12.7094 7.47376 12.6767 7.43272 12.6354L4.38073 9.58337C4.20642 9.41197 4.20642 9.13137 4.38073 8.95707L5.45912 7.87567C5.62462 7.71027 5.92002 7.71027 6.08552 7.87567L7.74593 9.53607L11.9146 5.36438C11.9557 5.32322 12.0045 5.29055 12.0581 5.26825C12.1118 5.24594 12.1694 5.23443 12.2275 5.23438C12.3456 5.23438 12.4579 5.28168 12.5406 5.36438L13.619 6.44587C13.7936 6.62017 13.7936 6.90077 13.6193 7.07207Z"/>
                             </svg>
-                            Enjoy Your Trip
+                            Celebrate Your Special Day
                         </li>
                     </ul>
                     <div class="contact-area">
-                        <span>Meet Our Local Tour Guider!</span>
-                        <a href="contact.html">Contact Now
+                        <span>Need Help Finding a Venue?</span>
+                        <a href="{{ route('party-plots.index') }}">Browse All Venues
                             <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1 9L9 1M9 1C7.22222 1.33333 3.33333 2 1 1M9 1C8.66667 2.66667 8 6.33333 9 9" stroke-width="1.5" stroke-linecap="round"></path>
                             </svg>
@@ -2713,7 +2981,8 @@
     </div>
     <!-- home1 location search Section End-->
 
-    <!-- home1 partner area Section Start-->
+    {{-- Those Company You Can Easily Trust Section - Commented Out --}}
+    {{-- <!-- home1 partner area Section Start-->
     <div class="partner-section mb-100">
         <div class="container">
             <div class="partner-title wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -2740,10 +3009,11 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 partner area Section End-->
 
-    <!-- home1 trip slider Section Start-->
+    {{-- One Day Trips Section - Commented Out --}}
+    {{-- <!-- home1 trip slider Section Start-->
     <div class="home1-trip-slider-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -3285,17 +3555,18 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 trip slider Section End-->
 
     <!-- home1 blog Section Start-->
+    @if(isset($blogs) && $blogs->count() > 0)
     <div class="home1-blog-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
                 <div class="col-xl-6 col-lg-8">
                     <div class="section-title text-center">
-                        <h2>Travel Inspirations</h2>
-                        <p>A curated list of inspiration the most tour & travel based on different destinations.</p>
+                        <h2>Latest Blogs</h2>
+                        <p>Discover helpful tips, guides, and insights about party plots, wedding venues, and event planning.</p>
                     </div>
                 </div>
             </div>
@@ -3304,24 +3575,20 @@
                     <div class="col-lg-12">
                         <div class="swiper home1-blog-slider">
                             <div class="swiper-wrapper">
+                                @foreach($blogs as $blog)
                                 <div class="swiper-slide">
                                     <div class="blog-card">
-                                        <a href="travel-inspiration-details.html" class="blog-img">
-                                            <img src="{{ asset('theme/assets/img/home1/blog-img1.jpg') }}" alt="">
+                                        <a href="{{ route('blogs.show', $blog->slug) }}" class="blog-img">
+                                            @if($blog->image)
+                                                <img src="{{ getFile($blog->image, 'blogs', 'admin') }}" alt="{{ $blog->title }}">
+                                            @else
+                                                <img src="{{ asset('theme/assets/img/home1/blog-img1.jpg') }}" alt="{{ $blog->title }}">
+                                            @endif
                                         </a>
                                         <div class="blog-content">
                                             <div class="blog-content-top">
-                                                <a href="travel-inspiration-01.html" class="location">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M7.81273 0C4.31731 0 1.47302 2.84433 1.47302 6.34163C1.47302 9.07242 5.28467 13.5258 6.92353 15.3136C7.15049 15.5628 7.47603 15.7042 7.81273 15.7042C8.14943 15.7042 8.47497 15.5628 8.70193 15.3136C10.3408 13.5258 14.1524 9.07238 14.1524 6.34163C14.1524 2.84433 11.3081 0 7.81273 0ZM8.35963 14.9991C8.21639 15.1535 8.02294 15.2391 7.81273 15.2391C7.60252 15.2391 7.40907 15.1536 7.26583 14.9991C5.66414 13.2525 1.93809 8.90875 1.93809 6.34167C1.93809 3.10103 4.57218 0.465067 7.81273 0.465067C11.0533 0.465067 13.6874 3.10103 13.6874 6.34167C13.6874 8.90875 9.96132 13.2524 8.35963 14.9991Z"/>
-                                                        <path
-                                                            d="M7.81274 9.76647C9.67127 9.76647 11.1779 8.25983 11.1779 6.4013C11.1779 4.54277 9.67127 3.03613 7.81274 3.03613C5.95421 3.03613 4.44757 4.54277 4.44757 6.4013C4.44757 8.25983 5.95421 9.76647 7.81274 9.76647Z"/>
-                                                    </svg>
-                                                    Tokyeo, Japan
-                                                </a>
-                                                <h4><a href="travel-inspiration-details.html">Top 10 Beaches to Visit This Summer Season.</a></h4>
-                                                <a href="travel-inspiration-01.html" class="blog-date">
+                                                <h4><a href="{{ route('blogs.show', $blog->slug) }}">{{ $blog->title }}</a></h4>
+                                                <a href="{{ route('blogs.show', $blog->slug) }}" class="blog-date">
                                                     <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                                                         <g>
                                                             <path
@@ -3342,160 +3609,17 @@
                                                                 d="M10.1666 1C10.1666 0.867392 10.2193 0.740215 10.3131 0.646447C10.4069 0.552678 10.534 0.5 10.6666 0.5C10.7993 0.5 10.9264 0.552678 11.0202 0.646447C11.114 0.740215 11.1666 0.867392 11.1666 1V3.66667C11.1666 3.79927 11.114 3.92645 11.0202 4.02022C10.9264 4.11399 10.7993 4.16667 10.6666 4.16667C10.534 4.16667 10.4069 4.11399 10.3131 4.02022C10.2193 3.92645 10.1666 3.79927 10.1666 3.66667V1ZM4.83331 1C4.83331 0.867392 4.88599 0.740215 4.97976 0.646447C5.07353 0.552678 5.2007 0.5 5.33331 0.5C5.46592 0.5 5.5931 0.552678 5.68687 0.646447C5.78063 0.740215 5.83331 0.867392 5.83331 1V3.66667C5.83331 3.79927 5.78063 3.92645 5.68687 4.02022C5.5931 4.11399 5.46592 4.16667 5.33331 4.16667C5.2007 4.16667 5.07353 4.11399 4.97976 4.02022C4.88599 3.92645 4.83331 3.79927 4.83331 3.66667V1Z"/>
                                                         </g>
                                                     </svg>
-                                                    31 January, 2025
+                                                    {{ $blog->created_at->format('d F, Y') }}
                                                 </a>
                                             </div>
                                             <svg class="divider" height="6" viewBox="0 0 288 6" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M5 2.5L0 0.113249V5.88675L5 3.5V2.5ZM283 3.5L288 5.88675V0.113249L283 2.5V3.5ZM4.5 3.5H283.5V2.5H4.5V3.5Z"/>
                                             </svg>
-                                            <p>Famous for its pure white silica sand & crystal-clear waters. Perfect for snorkeling & sailing!</p>
+                                            <p>{{ Str::limit(strip_tags($blog->description), 120) }}</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="swiper-slide">
-                                    <div class="blog-card">
-                                        <a href="travel-inspiration-details.html" class="blog-img">
-                                            <img src="{{ asset('theme/assets/img/home1/blog-img2.jpg') }}" alt="">
-                                        </a>
-                                        <div class="blog-content">
-                                            <div class="blog-content-top">
-                                                <a href="travel-inspiration-01.html" class="location">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M7.81273 0C4.31731 0 1.47302 2.84433 1.47302 6.34163C1.47302 9.07242 5.28467 13.5258 6.92353 15.3136C7.15049 15.5628 7.47603 15.7042 7.81273 15.7042C8.14943 15.7042 8.47497 15.5628 8.70193 15.3136C10.3408 13.5258 14.1524 9.07238 14.1524 6.34163C14.1524 2.84433 11.3081 0 7.81273 0ZM8.35963 14.9991C8.21639 15.1535 8.02294 15.2391 7.81273 15.2391C7.60252 15.2391 7.40907 15.1536 7.26583 14.9991C5.66414 13.2525 1.93809 8.90875 1.93809 6.34167C1.93809 3.10103 4.57218 0.465067 7.81273 0.465067C11.0533 0.465067 13.6874 3.10103 13.6874 6.34167C13.6874 8.90875 9.96132 13.2524 8.35963 14.9991Z"/>
-                                                        <path
-                                                            d="M7.81274 9.76647C9.67127 9.76647 11.1779 8.25983 11.1779 6.4013C11.1779 4.54277 9.67127 3.03613 7.81274 3.03613C5.95421 3.03613 4.44757 4.54277 4.44757 6.4013C4.44757 8.25983 5.95421 9.76647 7.81274 9.76647Z"/>
-                                                    </svg>
-                                                    Vietnam
-                                                </a>
-                                                <h4><a href="travel-inspiration-details.html">Tropical Escapes & Beach Getaways.</a></h4>
-                                                <a href="travel-inspiration-01.html" class="blog-date">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <g>
-                                                            <path
-                                                                d="M5.33329 9.66683C5.70148 9.66683 5.99996 9.36835 5.99996 9.00016C5.99996 8.63197 5.70148 8.3335 5.33329 8.3335C4.9651 8.3335 4.66663 8.63197 4.66663 9.00016C4.66663 9.36835 4.9651 9.66683 5.33329 9.66683Z"/>
-                                                            <path
-                                                                d="M5.33329 12.3333C5.70148 12.3333 5.99996 12.0349 5.99996 11.6667C5.99996 11.2985 5.70148 11 5.33329 11C4.9651 11 4.66663 11.2985 4.66663 11.6667C4.66663 12.0349 4.9651 12.3333 5.33329 12.3333Z"/>
-                                                            <path
-                                                                d="M7.99998 9.66683C8.36817 9.66683 8.66665 9.36835 8.66665 9.00016C8.66665 8.63197 8.36817 8.3335 7.99998 8.3335C7.63179 8.3335 7.33331 8.63197 7.33331 9.00016C7.33331 9.36835 7.63179 9.66683 7.99998 9.66683Z"/>
-                                                            <path
-                                                                d="M7.99998 12.3333C8.36817 12.3333 8.66665 12.0349 8.66665 11.6667C8.66665 11.2985 8.36817 11 7.99998 11C7.63179 11 7.33331 11.2985 7.33331 11.6667C7.33331 12.0349 7.63179 12.3333 7.99998 12.3333Z"/>
-                                                            <path
-                                                                d="M10.6667 9.66683C11.0349 9.66683 11.3333 9.36835 11.3333 9.00016C11.3333 8.63197 11.0349 8.3335 10.6667 8.3335C10.2985 8.3335 10 8.63197 10 9.00016C10 9.36835 10.2985 9.66683 10.6667 9.66683Z"/>
-                                                            <path
-                                                                d="M10.6667 12.3333C11.0349 12.3333 11.3333 12.0349 11.3333 11.6667C11.3333 11.2985 11.0349 11 10.6667 11C10.2985 11 10 11.2985 10 11.6667C10 12.0349 10.2985 12.3333 10.6667 12.3333Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M0.833313 13.0002V4.3335C0.833666 3.67056 1.09717 3.03488 1.56594 2.56612C2.0347 2.09735 2.67038 1.83385 3.33331 1.8335H5.49998V3.66683C5.49998 3.79944 5.55266 3.92661 5.64643 4.02038C5.74019 4.11415 5.86737 4.16683 5.99998 4.16683C6.13259 4.16683 6.25976 4.11415 6.35353 4.02038C6.4473 3.92661 6.49998 3.79944 6.49998 3.66683V1.8335H10.8333V3.66683C10.8333 3.79944 10.886 3.92661 10.9798 4.02038C11.0735 4.11415 11.2007 4.16683 11.3333 4.16683C11.4659 4.16683 11.5931 4.11415 11.6869 4.02038C11.7806 3.92661 11.8333 3.79944 11.8333 3.66683V1.8335H12.6666C13.3296 1.83385 13.9653 2.09735 14.434 2.56612C14.9028 3.03488 15.1663 3.67056 15.1666 4.3335V13.0002C15.1663 13.6631 14.9028 14.2988 14.434 14.7675C13.9653 15.2363 13.3296 15.4998 12.6666 15.5002H3.33331C2.67038 15.4998 2.0347 15.2363 1.56594 14.7675C1.09717 14.2988 0.833666 13.6631 0.833313 13.0002ZM1.83331 6.50016V13.0002C1.83331 13.398 1.99135 13.7795 2.27265 14.0608C2.55396 14.3421 2.93549 14.5002 3.33331 14.5002H12.6666C13.0645 14.5002 13.446 14.3421 13.7273 14.0608C14.0086 13.7795 14.1666 13.398 14.1666 13.0002V6.50016H1.83331Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M10.1666 1C10.1666 0.867392 10.2193 0.740215 10.3131 0.646447C10.4069 0.552678 10.534 0.5 10.6666 0.5C10.7993 0.5 10.9264 0.552678 11.0202 0.646447C11.114 0.740215 11.1666 0.867392 11.1666 1V3.66667C11.1666 3.79927 11.114 3.92645 11.0202 4.02022C10.9264 4.11399 10.7993 4.16667 10.6666 4.16667C10.534 4.16667 10.4069 4.11399 10.3131 4.02022C10.2193 3.92645 10.1666 3.79927 10.1666 3.66667V1ZM4.83331 1C4.83331 0.867392 4.88599 0.740215 4.97976 0.646447C5.07353 0.552678 5.2007 0.5 5.33331 0.5C5.46592 0.5 5.5931 0.552678 5.68687 0.646447C5.78063 0.740215 5.83331 0.867392 5.83331 1V3.66667C5.83331 3.79927 5.78063 3.92645 5.68687 4.02022C5.5931 4.11399 5.46592 4.16667 5.33331 4.16667C5.2007 4.16667 5.07353 4.11399 4.97976 4.02022C4.88599 3.92645 4.83331 3.79927 4.83331 3.66667V1Z"/>
-                                                        </g>
-                                                    </svg>
-                                                    23 January, 2025
-                                                </a>
-                                            </div>
-                                            <svg class="divider" height="6" viewBox="0 0 288 6" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M5 2.5L0 0.113249V5.88675L5 3.5V2.5ZM283 3.5L288 5.88675V0.113249L283 2.5V3.5ZM4.5 3.5H283.5V2.5H4.5V3.5Z"/>
-                                            </svg>
-                                            <p>A beach getaway is perfect for those seeking relaxation, adventure, or a romantic retreat.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="blog-card">
-                                        <a href="travel-inspiration-details.html" class="blog-img">
-                                            <img src="{{ asset('theme/assets/img/home1/blog-img3.jpg') }}" alt="">
-                                        </a>
-                                        <div class="blog-content">
-                                            <div class="blog-content-top">
-                                                <a href="travel-inspiration-01.html" class="location">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M7.81273 0C4.31731 0 1.47302 2.84433 1.47302 6.34163C1.47302 9.07242 5.28467 13.5258 6.92353 15.3136C7.15049 15.5628 7.47603 15.7042 7.81273 15.7042C8.14943 15.7042 8.47497 15.5628 8.70193 15.3136C10.3408 13.5258 14.1524 9.07238 14.1524 6.34163C14.1524 2.84433 11.3081 0 7.81273 0ZM8.35963 14.9991C8.21639 15.1535 8.02294 15.2391 7.81273 15.2391C7.60252 15.2391 7.40907 15.1536 7.26583 14.9991C5.66414 13.2525 1.93809 8.90875 1.93809 6.34167C1.93809 3.10103 4.57218 0.465067 7.81273 0.465067C11.0533 0.465067 13.6874 3.10103 13.6874 6.34167C13.6874 8.90875 9.96132 13.2524 8.35963 14.9991Z"/>
-                                                        <path
-                                                            d="M7.81274 9.76647C9.67127 9.76647 11.1779 8.25983 11.1779 6.4013C11.1779 4.54277 9.67127 3.03613 7.81274 3.03613C5.95421 3.03613 4.44757 4.54277 4.44757 6.4013C4.44757 8.25983 5.95421 9.76647 7.81274 9.76647Z"/>
-                                                    </svg>
-                                                    Maldives
-                                                </a>
-                                                <h4><a href="travel-inspiration-details.html">Crystal-Clear Waters & White Sands.</a></h4>
-                                                <a href="travel-inspiration-01.html" class="blog-date">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <g>
-                                                            <path
-                                                                d="M5.33329 9.66683C5.70148 9.66683 5.99996 9.36835 5.99996 9.00016C5.99996 8.63197 5.70148 8.3335 5.33329 8.3335C4.9651 8.3335 4.66663 8.63197 4.66663 9.00016C4.66663 9.36835 4.9651 9.66683 5.33329 9.66683Z"/>
-                                                            <path
-                                                                d="M5.33329 12.3333C5.70148 12.3333 5.99996 12.0349 5.99996 11.6667C5.99996 11.2985 5.70148 11 5.33329 11C4.9651 11 4.66663 11.2985 4.66663 11.6667C4.66663 12.0349 4.9651 12.3333 5.33329 12.3333Z"/>
-                                                            <path
-                                                                d="M7.99998 9.66683C8.36817 9.66683 8.66665 9.36835 8.66665 9.00016C8.66665 8.63197 8.36817 8.3335 7.99998 8.3335C7.63179 8.3335 7.33331 8.63197 7.33331 9.00016C7.33331 9.36835 7.63179 9.66683 7.99998 9.66683Z"/>
-                                                            <path
-                                                                d="M7.99998 12.3333C8.36817 12.3333 8.66665 12.0349 8.66665 11.6667C8.66665 11.2985 8.36817 11 7.99998 11C7.63179 11 7.33331 11.2985 7.33331 11.6667C7.33331 12.0349 7.63179 12.3333 7.99998 12.3333Z"/>
-                                                            <path
-                                                                d="M10.6667 9.66683C11.0349 9.66683 11.3333 9.36835 11.3333 9.00016C11.3333 8.63197 11.0349 8.3335 10.6667 8.3335C10.2985 8.3335 10 8.63197 10 9.00016C10 9.36835 10.2985 9.66683 10.6667 9.66683Z"/>
-                                                            <path
-                                                                d="M10.6667 12.3333C11.0349 12.3333 11.3333 12.0349 11.3333 11.6667C11.3333 11.2985 11.0349 11 10.6667 11C10.2985 11 10 11.2985 10 11.6667C10 12.0349 10.2985 12.3333 10.6667 12.3333Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M0.833313 13.0002V4.3335C0.833666 3.67056 1.09717 3.03488 1.56594 2.56612C2.0347 2.09735 2.67038 1.83385 3.33331 1.8335H5.49998V3.66683C5.49998 3.79944 5.55266 3.92661 5.64643 4.02038C5.74019 4.11415 5.86737 4.16683 5.99998 4.16683C6.13259 4.16683 6.25976 4.11415 6.35353 4.02038C6.4473 3.92661 6.49998 3.79944 6.49998 3.66683V1.8335H10.8333V3.66683C10.8333 3.79944 10.886 3.92661 10.9798 4.02038C11.0735 4.11415 11.2007 4.16683 11.3333 4.16683C11.4659 4.16683 11.5931 4.11415 11.6869 4.02038C11.7806 3.92661 11.8333 3.79944 11.8333 3.66683V1.8335H12.6666C13.3296 1.83385 13.9653 2.09735 14.434 2.56612C14.9028 3.03488 15.1663 3.67056 15.1666 4.3335V13.0002C15.1663 13.6631 14.9028 14.2988 14.434 14.7675C13.9653 15.2363 13.3296 15.4998 12.6666 15.5002H3.33331C2.67038 15.4998 2.0347 15.2363 1.56594 14.7675C1.09717 14.2988 0.833666 13.6631 0.833313 13.0002ZM1.83331 6.50016V13.0002C1.83331 13.398 1.99135 13.7795 2.27265 14.0608C2.55396 14.3421 2.93549 14.5002 3.33331 14.5002H12.6666C13.0645 14.5002 13.446 14.3421 13.7273 14.0608C14.0086 13.7795 14.1666 13.398 14.1666 13.0002V6.50016H1.83331Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M10.1666 1C10.1666 0.867392 10.2193 0.740215 10.3131 0.646447C10.4069 0.552678 10.534 0.5 10.6666 0.5C10.7993 0.5 10.9264 0.552678 11.0202 0.646447C11.114 0.740215 11.1666 0.867392 11.1666 1V3.66667C11.1666 3.79927 11.114 3.92645 11.0202 4.02022C10.9264 4.11399 10.7993 4.16667 10.6666 4.16667C10.534 4.16667 10.4069 4.11399 10.3131 4.02022C10.2193 3.92645 10.1666 3.79927 10.1666 3.66667V1ZM4.83331 1C4.83331 0.867392 4.88599 0.740215 4.97976 0.646447C5.07353 0.552678 5.2007 0.5 5.33331 0.5C5.46592 0.5 5.5931 0.552678 5.68687 0.646447C5.78063 0.740215 5.83331 0.867392 5.83331 1V3.66667C5.83331 3.79927 5.78063 3.92645 5.68687 4.02022C5.5931 4.11399 5.46592 4.16667 5.33331 4.16667C5.2007 4.16667 5.07353 4.11399 4.97976 4.02022C4.88599 3.92645 4.83331 3.79927 4.83331 3.66667V1Z"/>
-                                                        </g>
-                                                    </svg>
-                                                    01 April, 2025
-                                                </a>
-                                            </div>
-                                            <svg class="divider" height="6" viewBox="0 0 288 6" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M5 2.5L0 0.113249V5.88675L5 3.5V2.5ZM283 3.5L288 5.88675V0.113249L283 2.5V3.5ZM4.5 3.5H283.5V2.5H4.5V3.5Z"/>
-                                            </svg>
-                                            <p>Perfect for couples, families, and solo travelers alike, these beach destinations promise relaxation.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="blog-card">
-                                        <a href="travel-inspiration-details.html" class="blog-img">
-                                            <img src="{{ asset('theme/assets/img/home1/blog-img4.jpg') }}" alt="">
-                                        </a>
-                                        <div class="blog-content">
-                                            <div class="blog-content-top">
-                                                <a href="travel-inspiration-01.html" class="location">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M7.81273 0C4.31731 0 1.47302 2.84433 1.47302 6.34163C1.47302 9.07242 5.28467 13.5258 6.92353 15.3136C7.15049 15.5628 7.47603 15.7042 7.81273 15.7042C8.14943 15.7042 8.47497 15.5628 8.70193 15.3136C10.3408 13.5258 14.1524 9.07238 14.1524 6.34163C14.1524 2.84433 11.3081 0 7.81273 0ZM8.35963 14.9991C8.21639 15.1535 8.02294 15.2391 7.81273 15.2391C7.60252 15.2391 7.40907 15.1536 7.26583 14.9991C5.66414 13.2525 1.93809 8.90875 1.93809 6.34167C1.93809 3.10103 4.57218 0.465067 7.81273 0.465067C11.0533 0.465067 13.6874 3.10103 13.6874 6.34167C13.6874 8.90875 9.96132 13.2524 8.35963 14.9991Z"/>
-                                                        <path
-                                                            d="M7.81274 9.76647C9.67127 9.76647 11.1779 8.25983 11.1779 6.4013C11.1779 4.54277 9.67127 3.03613 7.81274 3.03613C5.95421 3.03613 4.44757 4.54277 4.44757 6.4013C4.44757 8.25983 5.95421 9.76647 7.81274 9.76647Z"/>
-                                                    </svg>
-                                                    Bali, Indonesia
-                                                </a>
-                                                <h4><a href="travel-inspiration-details.html">Escape to the World’s Breathtaking Islands.</a></h4>
-                                                <a href="travel-inspiration-01.html" class="blog-date">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                                        <g>
-                                                            <path
-                                                                d="M5.33329 9.66683C5.70148 9.66683 5.99996 9.36835 5.99996 9.00016C5.99996 8.63197 5.70148 8.3335 5.33329 8.3335C4.9651 8.3335 4.66663 8.63197 4.66663 9.00016C4.66663 9.36835 4.9651 9.66683 5.33329 9.66683Z"/>
-                                                            <path
-                                                                d="M5.33329 12.3333C5.70148 12.3333 5.99996 12.0349 5.99996 11.6667C5.99996 11.2985 5.70148 11 5.33329 11C4.9651 11 4.66663 11.2985 4.66663 11.6667C4.66663 12.0349 4.9651 12.3333 5.33329 12.3333Z"/>
-                                                            <path
-                                                                d="M7.99998 9.66683C8.36817 9.66683 8.66665 9.36835 8.66665 9.00016C8.66665 8.63197 8.36817 8.3335 7.99998 8.3335C7.63179 8.3335 7.33331 8.63197 7.33331 9.00016C7.33331 9.36835 7.63179 9.66683 7.99998 9.66683Z"/>
-                                                            <path
-                                                                d="M7.99998 12.3333C8.36817 12.3333 8.66665 12.0349 8.66665 11.6667C8.66665 11.2985 8.36817 11 7.99998 11C7.63179 11 7.33331 11.2985 7.33331 11.6667C7.33331 12.0349 7.63179 12.3333 7.99998 12.3333Z"/>
-                                                            <path
-                                                                d="M10.6667 9.66683C11.0349 9.66683 11.3333 9.36835 11.3333 9.00016C11.3333 8.63197 11.0349 8.3335 10.6667 8.3335C10.2985 8.3335 10 8.63197 10 9.00016C10 9.36835 10.2985 9.66683 10.6667 9.66683Z"/>
-                                                            <path
-                                                                d="M10.6667 12.3333C11.0349 12.3333 11.3333 12.0349 11.3333 11.6667C11.3333 11.2985 11.0349 11 10.6667 11C10.2985 11 10 11.2985 10 11.6667C10 12.0349 10.2985 12.3333 10.6667 12.3333Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M0.833313 13.0002V4.3335C0.833666 3.67056 1.09717 3.03488 1.56594 2.56612C2.0347 2.09735 2.67038 1.83385 3.33331 1.8335H5.49998V3.66683C5.49998 3.79944 5.55266 3.92661 5.64643 4.02038C5.74019 4.11415 5.86737 4.16683 5.99998 4.16683C6.13259 4.16683 6.25976 4.11415 6.35353 4.02038C6.4473 3.92661 6.49998 3.79944 6.49998 3.66683V1.8335H10.8333V3.66683C10.8333 3.79944 10.886 3.92661 10.9798 4.02038C11.0735 4.11415 11.2007 4.16683 11.3333 4.16683C11.4659 4.16683 11.5931 4.11415 11.6869 4.02038C11.7806 3.92661 11.8333 3.79944 11.8333 3.66683V1.8335H12.6666C13.3296 1.83385 13.9653 2.09735 14.434 2.56612C14.9028 3.03488 15.1663 3.67056 15.1666 4.3335V13.0002C15.1663 13.6631 14.9028 14.2988 14.434 14.7675C13.9653 15.2363 13.3296 15.4998 12.6666 15.5002H3.33331C2.67038 15.4998 2.0347 15.2363 1.56594 14.7675C1.09717 14.2988 0.833666 13.6631 0.833313 13.0002ZM1.83331 6.50016V13.0002C1.83331 13.398 1.99135 13.7795 2.27265 14.0608C2.55396 14.3421 2.93549 14.5002 3.33331 14.5002H12.6666C13.0645 14.5002 13.446 14.3421 13.7273 14.0608C14.0086 13.7795 14.1666 13.398 14.1666 13.0002V6.50016H1.83331Z"/>
-                                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M10.1666 1C10.1666 0.867392 10.2193 0.740215 10.3131 0.646447C10.4069 0.552678 10.534 0.5 10.6666 0.5C10.7993 0.5 10.9264 0.552678 11.0202 0.646447C11.114 0.740215 11.1666 0.867392 11.1666 1V3.66667C11.1666 3.79927 11.114 3.92645 11.0202 4.02022C10.9264 4.11399 10.7993 4.16667 10.6666 4.16667C10.534 4.16667 10.4069 4.11399 10.3131 4.02022C10.2193 3.92645 10.1666 3.79927 10.1666 3.66667V1ZM4.83331 1C4.83331 0.867392 4.88599 0.740215 4.97976 0.646447C5.07353 0.552678 5.2007 0.5 5.33331 0.5C5.46592 0.5 5.5931 0.552678 5.68687 0.646447C5.78063 0.740215 5.83331 0.867392 5.83331 1V3.66667C5.83331 3.79927 5.78063 3.92645 5.68687 4.02022C5.5931 4.11399 5.46592 4.16667 5.33331 4.16667C5.2007 4.16667 5.07353 4.11399 4.97976 4.02022C4.88599 3.92645 4.83331 3.79927 4.83331 3.66667V1Z"/>
-                                                        </g>
-                                                    </svg>
-                                                    23 March, 2025
-                                                </a>
-                                            </div>
-                                            <svg class="divider" height="6" viewBox="0 0 288 6" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M5 2.5L0 0.113249V5.88675L5 3.5V2.5ZM283 3.5L288 5.88675V0.113249L283 2.5V3.5ZM4.5 3.5H283.5V2.5H4.5V3.5Z"/>
-                                            </svg>
-                                            <p>Escape to the World’s Most Breathtaking Islands and immerse yourself in paradise.</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -3521,16 +3645,16 @@
             </div>
             <div class="row wow animate fadeInUp" data-wow-delay="200ms" data-wow-duration="1500ms">
                 <div class="col-lg-12 d-flex justify-content-center">
-                    <a href="travel-inspiration-01.html" class="primary-btn1 transparent">
+                    <a href="{{ route('blogs.index') }}" class="primary-btn1 transparent">
                         <span>
-                            View All Inspiration
+                            View All Blogs
                             <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M9.73535 1.14746C9.57033 1.97255 9.32924 3.26406 9.24902 4.66797C9.16817 6.08312 9.25559 7.5453 9.70214 8.73633C9.84754 9.12406 9.65129 9.55659 9.26367 9.70215C8.9001 9.83849 8.4969 9.67455 8.32812 9.33398L8.29785 9.26367L8.19921 8.98438C7.73487 7.5758 7.67054 5.98959 7.75097 4.58203C7.77875 4.09598 7.82525 3.62422 7.87988 3.17969L1.53027 9.53027C1.23738 9.82317 0.762615 9.82317 0.469722 9.53027C0.176829 9.23738 0.176829 8.76262 0.469722 8.46973L6.83593 2.10254C6.3319 2.16472 5.79596 2.21841 5.25 2.24902C3.8302 2.32862 2.2474 2.26906 0.958003 1.79102L0.704097 1.68945L0.635738 1.65527C0.303274 1.47099 0.157578 1.06102 0.310542 0.704102C0.463655 0.347333 0.860941 0.170391 1.22363 0.28418L1.29589 0.310547L1.48828 0.387695C2.47399 0.751207 3.79966 0.827571 5.16601 0.750977C6.60111 0.670504 7.97842 0.428235 8.86132 0.262695L9.95312 0.0585938L9.73535 1.14746Z"/>
                             </svg>
                         </span>
                         <span>
-                            View All Inspiration
+                            View All Blogs
                             <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M9.73535 1.14746C9.57033 1.97255 9.32924 3.26406 9.24902 4.66797C9.16817 6.08312 9.25559 7.5453 9.70214 8.73633C9.84754 9.12406 9.65129 9.55659 9.26367 9.70215C8.9001 9.83849 8.4969 9.67455 8.32812 9.33398L8.29785 9.26367L8.19921 8.98438C7.73487 7.5758 7.67054 5.98959 7.75097 4.58203C7.77875 4.09598 7.82525 3.62422 7.87988 3.17969L1.53027 9.53027C1.23738 9.82317 0.762615 9.82317 0.469722 9.53027C0.176829 9.23738 0.176829 8.76262 0.469722 8.46973L6.83593 2.10254C6.3319 2.16472 5.79596 2.21841 5.25 2.24902C3.8302 2.32862 2.2474 2.26906 0.958003 1.79102L0.704097 1.68945L0.635738 1.65527C0.303274 1.47099 0.157578 1.06102 0.310542 0.704102C0.463655 0.347333 0.860941 0.170391 1.22363 0.28418L1.29589 0.310547L1.48828 0.387695C2.47399 0.751207 3.79966 0.827571 5.16601 0.750977C6.60111 0.670504 7.97842 0.428235 8.86132 0.262695L9.95312 0.0585938L9.73535 1.14746Z"/>
@@ -3541,9 +3665,68 @@
             </div>
         </div>
     </div>
+    @endif
     <!-- home1 blog Section End-->
 
-    <!-- home1 testimonial Section Start-->
+    <!-- Related Links Section Start-->
+    @if(isset($relatedLinks) && $relatedLinks->count() > 0)
+    <div class="related-links-section mb-100">
+        <div class="container">
+            <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
+                <div class="col-xl-6 col-lg-8">
+                    <div class="section-title text-center">
+                        <h2>Related Links</h2>
+                        <p>Explore venues by location, category, and more</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="related-links-carousel-wrapper">
+                        <div class="swiper related-links-carousel">
+                            <div class="swiper-wrapper">
+                                @php
+                                    $links = $relatedLinks->chunk(7); // Group links into chunks of 7 (7 rows per column)
+                                @endphp
+                                @foreach($links as $linkGroup)
+                                <div class="swiper-slide">
+                                    <div class="related-links-column">
+                                        @foreach($linkGroup as $link)
+                                        <a href="{{ route('seo-link.show', $link->slug) }}" class="related-link-item">
+                                            {{ $link->link_text }}
+                                        </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="slider-btn-grp related-links-nav">
+                            <div class="slider-btn related-links-prev">
+                                <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M11.002 13.0005C10.002 10.5005 5.00195 8.00049 2.00195 7.00049C5.00195 6.00049 9.50195 4.50049 11.002 1.00049" stroke-width="1.5" stroke-linecap="round" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="slider-btn related-links-next">
+                                <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M2.99805 13.0005C3.99805 10.5005 8.99805 8.00049 11.998 7.00049C8.99805 6.00049 4.49805 4.50049 2.99805 1.00049" stroke-width="1.5" stroke-linecap="round" />
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    <!-- Related Links Section End-->
+
+    {{-- Hear It from Travelers Section - Commented Out --}}
+    {{-- <!-- home1 testimonial Section Start-->
     <div class="home1-testimonial-section mb-100">
         <div class="container">
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
@@ -3784,7 +3967,7 @@
                 </a>
             </div>
         </div>
-    </div>
+    </div> --}}
     <!-- home1 testimonial Section End-->
 
     <!-- home1 faq Section Start-->
@@ -3793,90 +3976,90 @@
             <div class="row justify-content-center mb-50 wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
                 <div class="col-xl-6 col-lg-8">
                     <div class="section-title text-center">
-                        <h2>Questions & Answer</h2>
-                        <p>We’re committed to offering more than just products—we provide exceptional experiences.</p>
+                        <h2>Frequently Asked Questions</h2>
+                        <p>Find answers to common questions about booking party plots, wedding venues, and banquet halls for your special events.</p>
                     </div>
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-xl-8 col-lg-10">
                     <div class="faq-wrap">
-                        <div class="accordion accordion-flush" id="accordionFlushExample">
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms">
+                        <div class="accordion accordion-flush" id="accordionFlushExample" itemscope itemtype="https://schema.org/FAQPage">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="200ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingOne">
                                     <button class="accordion-button" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseOne"
-                                        aria-expanded="false" aria-controls="flush-collapseOne">What Services Does Your Travel Agency Provide?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseOne" itemprop="name">How do I book a party plot or wedding venue online?</button>
                                 </h5>
                                 <div id="flush-collapseOne" class="accordion-collapse collapse show"
-                                    aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                        A travel agency typically provides a wide range of services to ensure a smooth and enjoyable travel experience. As like- <span>Hotel booking, Flight Booking, Visa & Customized Travel Pakcge etc.</span>
+                                    aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        Booking a <span>party plot</span> or <span>wedding venue</span> is simple! Browse our extensive collection of venues by city, category, or price range. Once you find your preferred venue, click on it to view detailed information including capacity, amenities, pricing, and photos. You can then submit an enquiry form directly from the venue page, and our team will contact you to confirm your booking and discuss any special requirements.
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="400ms" data-wow-duration="1500ms">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="400ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingTwo">
                                     <button class="accordion-button collapsed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo"
-                                        aria-expanded="false" aria-controls="flush-collapseTwo">Do You Offer Customized Travel Packages?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseTwo" itemprop="name">What types of venues are available for booking?</button>
                                 </h5>
                                 <div id="flush-collapseTwo" class="accordion-collapse collapse"
-                                    aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                       Absolutely! We offer fully customized travel packages based on your interests, budget, and schedule. Whether you're planning <span>a solo adventure, a family vacation, a romantic getaway, or a group tour</span>, our team will tailor every detail to create a personalized travel experience just for you.
+                                    aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        We offer a wide variety of <span>event venues</span> to suit different occasions. Our platform includes <span>party plots</span> for outdoor celebrations, <span>banquet halls</span> for indoor events, <span>wedding venues</span> for ceremonies and receptions, conference halls for corporate events, and more. Each venue is categorized to help you find exactly what you need for your special occasion, whether it's a wedding, birthday party, corporate event, or family gathering.
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="600ms" data-wow-duration="1500ms">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="600ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingThree">
                                     <button class="accordion-button collapsed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseThree"
-                                        aria-expanded="false" aria-controls="flush-collapseThree">Can I Book Flights, Hotels, and Tours Separately?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseThree" itemprop="name">Can I view venue details, photos, and pricing before booking?</button>
                                 </h5>
                                 <div id="flush-collapseThree" class="accordion-collapse collapse"
-                                    aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                       Yes, you can! We provide the flexibility to book <span>flights, hotels, and tours separately</span> based on your specific needs. Whether you need just a flight, only accommodation, or want to add a tour later — we’re here to help you plan each part of your trip your way.
+                                    aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        Absolutely! Each <span>party plot</span> and <span>wedding venue</span> listing includes comprehensive details such as venue capacity, location, amenities (parking, catering, decoration services), pricing information, high-quality photos, and contact details. You can also view the venue on an interactive map to check its exact location. This helps you make an informed decision before submitting a booking enquiry.
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingFour">
                                     <button class="accordion-button collapsed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseFour"
-                                        aria-expanded="false" aria-controls="flush-collapseFour">Do You Provide Visa Assistance?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseFour" itemprop="name">What amenities are typically included with party plot and banquet hall bookings?</button>
                                 </h5>
                                 <div id="flush-collapseFour" class="accordion-collapse collapse"
-                                    aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                        Yes, we do! Our team offers complete <span>visa assistance services</span> to help you navigate the application process smoothly. From providing guidance on required documents to scheduling appointments and submitting applications, we're here to support you every step of the way.
+                                    aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        Most <span>party plots</span> and <span>banquet halls</span> offer essential amenities including spacious event areas, parking facilities, power supply, water connections, and basic infrastructure. Many venues also provide additional services such as <span>catering options, decoration services, sound systems, lighting arrangements, and restroom facilities</span>. The specific amenities vary by venue, and all details are clearly listed on each venue's page to help you choose the perfect location for your event.
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingFive">
                                     <button class="accordion-button collapsed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseFive"
-                                        aria-expanded="false" aria-controls="flush-collapseFive">What Payment Methods Do You Accept?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseFive" itemprop="name">How far in advance should I book a wedding venue or party plot?</button>
                                 </h5>
                                 <div id="flush-collapseFive" class="accordion-collapse collapse"
-                                    aria-labelledby="flush-headingFive" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                        We accept a variety of <span>payment methods</span> to make your booking process easy and convenient. These include <span>cash, bank transfers, mobile payments (such as bKash, Nagad), and major debit/credit cards</span>. If you have a preferred payment option, feel free to let us know!
+                                    aria-labelledby="flush-headingFive" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        For popular <span>wedding venues</span> and <span>party plots</span>, especially during peak seasons, we recommend booking at least <span>3-6 months in advance</span>. However, availability varies by venue and location. Popular dates and weekends tend to get booked quickly, so early planning ensures you secure your preferred venue. You can check real-time availability by contacting the venue directly through our platform after submitting an enquiry.
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms">
+                            <div class="accordion-item wow animate fadeInDown" data-wow-delay="800ms" data-wow-duration="1500ms" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                                 <h5 class="accordion-header" id="flush-headingSix">
                                     <button class="accordion-button collapsed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#flush-collapseSix"
-                                        aria-expanded="false" aria-controls="flush-collapseSix">What Travel Documents are Required for International Travel?</button>
+                                        aria-expanded="false" aria-controls="flush-collapseSix" itemprop="name">Are there venues available in different cities and locations?</button>
                                 </h5>
                                 <div id="flush-collapseSix" class="accordion-collapse collapse"
-                                    aria-labelledby="flush-headingSix" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                        For international travel, you’ll typically need several important <span>travel documents</span>, including a <span>valid passport, visa (if required), airline tickets, travel insurance, and any COVID-19 related health certificates</span>. Depending on your destination, additional documents may be necessary. Our team will guide you through the specific requirements for your trip.
+                                    aria-labelledby="flush-headingSix" data-bs-parent="#accordionFlushExample" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                    <div class="accordion-body" itemprop="text">
+                                        Yes! Our platform features <span>party plots</span>, <span>wedding venues</span>, and <span>banquet halls</span> across multiple cities and locations. You can easily filter venues by city to find options in your preferred area. Whether you're looking for venues in major metropolitan areas or smaller towns, our comprehensive database helps you discover the perfect location for your event. Use our location search feature to explore venues in specific cities and neighborhoods.
                                     </div>
                                 </div>
                             </div>
@@ -3981,6 +4164,155 @@
 
     <!-- home1 Footer Section Start-->
 
+@push('styles')
+<style>
+    /* Related Links Section Styles */
+    .related-links-section {
+        background: #f8f9fa;
+        padding: 80px 0;
+    }
+
+    .related-links-carousel-wrapper {
+        position: relative;
+        padding: 0 50px;
+    }
+
+    .related-links-carousel {
+        overflow: hidden;
+    }
+
+    .related-links-column {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+    }
+
+    .related-link-item {
+        display: block;
+        padding: 14px 20px;
+        background: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--theme-default, #ff6b35);
+        font-size: 15px;
+        font-weight: 500;
+        text-align: left;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .related-link-item:hover {
+        background: var(--theme-default, #ff6b35);
+        color: #fff;
+        border-color: var(--theme-default, #ff6b35);
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .related-links-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .related-links-nav .slider-btn {
+        pointer-events: all;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .related-links-nav .slider-btn:hover {
+        background: var(--theme-default, #ff6b35);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .related-links-nav .slider-btn:hover svg path {
+        stroke: #fff;
+    }
+
+    .related-links-nav .slider-btn svg path {
+        stroke: var(--theme-default, #ff6b35);
+        transition: stroke 0.3s ease;
+    }
+
+    .related-links-prev {
+        left: 0;
+    }
+
+    .related-links-next {
+        right: 0;
+    }
+
+    .related-links-column .related-link-item {
+        flex: 0 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .related-links-carousel-wrapper {
+            padding: 0 40px;
+        }
+
+        .related-link-item {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .related-links-nav .slider-btn {
+            width: 35px;
+            height: 35px;
+        }
+    }
+</style>
+<style>
+    /* Category Placeholder Styles */
+    .category-placeholder {
+        width: 100%;
+        height: 100%;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color1) 0%, var(--primary-color2) 100%);
+        color: white;
+    }
+
+    .category-placeholder i {
+        opacity: 0.8;
+    }
+
+    .destination-card2 .destination-img {
+        min-height: 200px;
+        display: block;
+    }
+
+    .destination-card2 .destination-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        min-height: 200px;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
     $(document).ready(function() {
@@ -4003,6 +4335,41 @@
                     crossFade: true
                 },
             });
+
+            // Initialize category slider
+            if (document.querySelector('.home2-category-slider')) {
+                var categorySlider = new Swiper('.home2-category-slider', {
+                    slidesPerView: 4,
+                    spaceBetween: 24,
+                    loop: false,
+                    autoplay: {
+                        delay: 3000,
+                        disableOnInteraction: false,
+                    },
+                    navigation: {
+                        nextEl: '.category-slider-next',
+                        prevEl: '.category-slider-prev',
+                    },
+                    breakpoints: {
+                        320: {
+                            slidesPerView: 1,
+                            spaceBetween: 15,
+                        },
+                        576: {
+                            slidesPerView: 2,
+                            spaceBetween: 20,
+                        },
+                        768: {
+                            slidesPerView: 3,
+                            spaceBetween: 24,
+                        },
+                        992: {
+                            slidesPerView: 4,
+                            spaceBetween: 24,
+                        },
+                    },
+                });
+            }
 
             // Initialize destination/cities slider
             var destinationSlider = new Swiper('.home2-destination-slider', {
@@ -4036,6 +4403,72 @@
                     },
                 },
             });
+
+            // Initialize Related Links Carousel
+            if (document.querySelector('.related-links-carousel')) {
+                var relatedLinksCarousel = new Swiper('.related-links-carousel', {
+                    slidesPerView: 4,
+                    spaceBetween: 24,
+                    loop: false,
+                    navigation: {
+                        nextEl: '.related-links-next',
+                        prevEl: '.related-links-prev',
+                    },
+                    breakpoints: {
+                        320: {
+                            slidesPerView: 1,
+                            spaceBetween: 15,
+                        },
+                        576: {
+                            slidesPerView: 2,
+                            spaceBetween: 20,
+                        },
+                        768: {
+                            slidesPerView: 3,
+                            spaceBetween: 24,
+                        },
+                        992: {
+                            slidesPerView: 4,
+                            spaceBetween: 24,
+                        },
+                    },
+                });
+            }
+
+            // Initialize blog slider
+            if (document.querySelector('.home1-blog-slider')) {
+                var blogSlider = new Swiper('.home1-blog-slider', {
+                    slidesPerView: 3,
+                    spaceBetween: 24,
+                    loop: false,
+                    autoplay: {
+                        delay: 3000,
+                        disableOnInteraction: false,
+                    },
+                    navigation: {
+                        nextEl: '.blog-slider-next',
+                        prevEl: '.blog-slider-prev',
+                    },
+                    breakpoints: {
+                        320: {
+                            slidesPerView: 1,
+                            spaceBetween: 15,
+                        },
+                        576: {
+                            slidesPerView: 2,
+                            spaceBetween: 20,
+                        },
+                        768: {
+                            slidesPerView: 2,
+                            spaceBetween: 24,
+                        },
+                        992: {
+                            slidesPerView: 3,
+                            spaceBetween: 24,
+                        },
+                    },
+                });
+            }
         }
 
         $('.option-list-destination li').on('click', function() {
@@ -4086,6 +4519,61 @@
                     $(this).hide();
                 }
             });
+        });
+
+        // City search dropdown functionality for venue search section
+        const citySearchInput = $('#city-search-input');
+        const cityDropdown = $('#search_vendor');
+        const cityDropdownList = cityDropdown.find('.dropdown-list');
+        const cityNotFound = cityDropdownList.find('.not-found');
+
+        // Handle city dropdown click
+        citySearchInput.on('click', function(e) {
+            e.stopPropagation();
+            cityDropdownList.toggle();
+        });
+
+        // Handle city selection
+        cityDropdownList.find('li:not(.not-found)').on('click', function() {
+            const city = $(this).data('city') || $(this).text();
+            citySearchInput.val(city);
+            cityDropdownList.hide();
+        });
+
+        // Handle city search input
+        citySearchInput.on('keyup', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            let found = false;
+
+            cityDropdownList.find('li:not(.not-found)').each(function() {
+                const cityName = $(this).text().toLowerCase();
+                if (cityName.includes(searchTerm)) {
+                    $(this).show();
+                    found = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            cityNotFound.toggle(!found && searchTerm.length > 0);
+        });
+
+        // Close dropdown when clicking outside
+        $(document).on('click', function(e) {
+            if (!cityDropdown.is(e.target) && cityDropdown.has(e.target).length === 0) {
+                cityDropdownList.hide();
+            }
+        });
+
+        // Handle form submission
+        $('.location-search-area').on('submit', function(e) {
+            const city = citySearchInput.val();
+            if (city) {
+                // Form will submit with city parameter
+                return true;
+            }
+            // If no city selected, still allow form submission to show all venues
+            return true;
         });
     });
 </script>

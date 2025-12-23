@@ -39,3 +39,11 @@ Route::prefix('party-plots')->name('party-plots.')->group(function () {
 
 
 
+
+
+
+
+
+
+
+

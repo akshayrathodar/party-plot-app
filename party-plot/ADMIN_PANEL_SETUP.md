@@ -113,3 +113,11 @@ All admin routes are accessible at `/admin/*`:
 - The User model now includes additional fields: username, mobile, address, staff_photo, staff_id_proof, profile, status
 - Helper functions are available globally (uploadFile, getSetting, toastSuccess, etc.)
 
+
+
+
+
+
+
+
+
