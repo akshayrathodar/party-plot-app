@@ -2,6 +2,289 @@
 
 @section('title', $plot->name . ' - Party Plot Details')
 
+@push('meta')
+@php
+    $siteName = getSetting('company_name', 'Party Plot Platform');
+    $siteUrl = config('app.url');
+    $plotUrl = route('party-plots.show', $plot->slug);
+    $description = $plot->description ? strip_tags($plot->description) : 'Experience the perfect venue for your special occasions at ' . $plot->name . '. Located in ' . $plot->city . ($plot->area ? ', ' . $plot->area : '') . '.';
+    
+    // Get featured image URL
+    $featuredImage = null;
+    if ($plot->featured_image) {
+        $featuredImage = getFile($plot->featured_image, 'party-plots', 'admin');
+    }
+    if (!$featuredImage && $plot->gallery_images && is_array($plot->gallery_images) && count($plot->gallery_images) > 0) {
+        $featuredImage = getFile($plot->gallery_images[0], 'party-plots', 'admin');
+    }
+    
+    // Build address
+    $addressParts = array_filter([$plot->full_address, $plot->area, $plot->city]);
+    $fullAddress = implode(', ', $addressParts);
+    
+    // Build geo coordinates
+    $geoCoordinates = null;
+    if ($plot->latitude && $plot->longitude) {
+        $geoCoordinates = [
+            '@type' => 'GeoCoordinates',
+            'latitude' => (float)$plot->latitude,
+            'longitude' => (float)$plot->longitude
+        ];
+    }
+    
+    // Build price range
+    $priceRange = null;
+    if ($plot->price_range_min || $plot->price_range_max) {
+        $priceRange = [
+            '@type' => 'PriceRange',
+            'minValue' => $plot->price_range_min ? (float)$plot->price_range_min : null,
+            'maxValue' => $plot->price_range_max ? (float)$plot->price_range_max : null,
+            'currency' => 'INR'
+        ];
+        // Remove null values
+        $priceRange = array_filter($priceRange, function($value) {
+            return $value !== null;
+        });
+    }
+    
+    // Build amenities list
+    $amenities = [];
+    if ($plot->parking) $amenities[] = 'Parking';
+    if ($plot->ac_available) $amenities[] = 'Air Conditioning';
+    if ($plot->generator_backup) $amenities[] = 'Generator Backup';
+    if ($plot->rooms) $amenities[] = 'Rooms';
+    if ($plot->dj_allowed) $amenities[] = 'DJ Allowed';
+    if ($plot->decoration_allowed) $amenities[] = 'Decoration Allowed';
+    if ($plot->catering_allowed) $amenities[] = 'Catering Allowed';
+    
+    // Build aggregate rating
+    $aggregateRating = null;
+    if ($plot->google_rating && $plot->google_review_count) {
+        $aggregateRating = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => (float)$plot->google_rating,
+            'reviewCount' => (int)$plot->google_review_count,
+            'bestRating' => 5,
+            'worstRating' => 1
+        ];
+    }
+    
+    // Build images array
+    $images = [];
+    if ($featuredImage) {
+        $images[] = $featuredImage;
+    }
+    if ($plot->gallery_images && is_array($plot->gallery_images)) {
+        foreach ($plot->gallery_images as $galleryImg) {
+            $imgUrl = getFile($galleryImg, 'party-plots', 'admin');
+            if ($imgUrl && !in_array($imgUrl, $images)) {
+                $images[] = $imgUrl;
+            }
+        }
+    }
+    
+    // Build breadcrumb items
+    $breadcrumbItems = [
+        [
+            '@type' => 'ListItem',
+            'position' => 1,
+            'name' => 'Home',
+            'item' => $siteUrl
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => 'Party Plots',
+            'item' => route('party-plots.index')
+        ]
+    ];
+    
+    $position = 3;
+    if ($plot->category) {
+        $breadcrumbItems[] = [
+            '@type' => 'ListItem',
+            'position' => $position++,
+            'name' => $plot->category->name,
+            'item' => route('party-plots.index', ['category' => $plot->category->id])
+        ];
+    }
+    
+    $breadcrumbItems[] = [
+        '@type' => 'ListItem',
+        'position' => $position,
+        'name' => $plot->name,
+        'item' => $plotUrl
+    ];
+    
+    // Helper function to remove null values from array
+    $removeNulls = function($array) use (&$removeNulls) {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = $removeNulls($value);
+                if (empty($array[$key])) {
+                    unset($array[$key]);
+                }
+            } elseif ($value === null || $value === '') {
+                unset($array[$key]);
+            }
+        }
+        return $array;
+    };
+    
+    // Build RealEstateListing schema
+    $realEstateListing = [
+        '@type' => 'RealEstateListing',
+        '@id' => $plotUrl . '#listing',
+        'name' => $plot->name,
+        'description' => $description,
+        'url' => $plotUrl,
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => $plot->full_address ?? '',
+            'addressLocality' => $plot->area ?? $plot->city ?? '',
+            'addressRegion' => $plot->city ?? '',
+            'addressCountry' => 'IN'
+        ],
+        'offers' => [
+            '@type' => 'Offer',
+            'url' => $plotUrl,
+            'priceCurrency' => 'INR',
+            'availability' => 'https://schema.org/InStock',
+            'validFrom' => $plot->created_at->toIso8601String()
+        ]
+    ];
+    
+    if ($featuredImage) {
+        $realEstateListing['image'] = count($images) > 1 ? $images : $featuredImage;
+    }
+    
+    if ($geoCoordinates) {
+        $realEstateListing['geo'] = $geoCoordinates;
+    }
+    
+    if ($plot->price_range_min || $plot->price_range_max) {
+        $realEstateListing['priceRange'] = '₹' . number_format($plot->price_range_min ?? 0) . ' - ₹' . number_format($plot->price_range_max ?? 0);
+    }
+    
+    if ($plot->capacity_min || $plot->capacity_max) {
+        $realEstateListing['numberOfRooms'] = $plot->capacity_max ?? $plot->capacity_min;
+    }
+    
+    if ($aggregateRating) {
+        $realEstateListing['aggregateRating'] = $aggregateRating;
+    }
+    
+    if ($plot->price_range_min) {
+        $realEstateListing['offers']['price'] = (string)$plot->price_range_min;
+    }
+    
+    if ($plot->category) {
+        $realEstateListing['category'] = $plot->category->name;
+    }
+    
+    // Build LocalBusiness schema
+    $localBusiness = [
+        '@type' => 'LocalBusiness',
+        '@id' => $plotUrl . '#business',
+        'name' => $plot->name,
+        'description' => $description,
+        'url' => $plotUrl,
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => $plot->full_address ?? '',
+            'addressLocality' => $plot->area ?? $plot->city ?? '',
+            'addressRegion' => $plot->city ?? '',
+            'addressCountry' => 'IN'
+        ]
+    ];
+    
+    if ($featuredImage) {
+        $localBusiness['image'] = count($images) > 1 ? $images : $featuredImage;
+    }
+    
+    if ($geoCoordinates) {
+        $localBusiness['geo'] = $geoCoordinates;
+    }
+    
+    if ($plot->phone) {
+        $localBusiness['telephone'] = $plot->phone;
+    }
+    
+    if ($plot->email) {
+        $localBusiness['email'] = $plot->email;
+    }
+    
+    $sameAsLinks = array_values(array_filter([$plot->website, $plot->facebook, $plot->instagram, $plot->twitter, $plot->youtube]));
+    if (!empty($sameAsLinks)) {
+        $localBusiness['sameAs'] = $sameAsLinks;
+    }
+    
+    if ($aggregateRating) {
+        $localBusiness['aggregateRating'] = $aggregateRating;
+    }
+    
+    if (count($amenities) > 0) {
+        $localBusiness['amenityFeature'] = array_map(function($amenity) {
+            return [
+                '@type' => 'LocationFeatureSpecification',
+                'name' => $amenity,
+                'value' => true
+            ];
+        }, $amenities);
+    }
+    
+    if ($plot->price_range_min || $plot->price_range_max) {
+        $localBusiness['priceRange'] = '₹' . number_format($plot->price_range_min ?? 0) . ' - ₹' . number_format($plot->price_range_max ?? 0);
+    }
+    
+    // Build schema graph
+    $schemaGraph = [
+        $realEstateListing,
+        $localBusiness,
+        [
+            '@type' => 'BreadcrumbList',
+            '@id' => $plotUrl . '#breadcrumb',
+            'itemListElement' => $breadcrumbItems
+        ],
+        [
+            '@type' => 'Organization',
+            '@id' => $siteUrl . '#organization',
+            'name' => $siteName,
+            'url' => $siteUrl,
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => getCompanyLogo()
+            ]
+        ]
+    ];
+@endphp
+
+<!-- Meta Tags -->
+<meta name="description" content="{{ Str::limit($description, 160) }}">
+<meta property="og:title" content="{{ $plot->name }}">
+<meta property="og:description" content="{{ Str::limit($description, 160) }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ $plotUrl }}">
+@if($featuredImage)
+<meta property="og:image" content="{{ $featuredImage }}">
+@endif
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $plot->name }}">
+<meta name="twitter:description" content="{{ Str::limit($description, 160) }}">
+@if($featuredImage)
+<meta name="twitter:image" content="{{ $featuredImage }}">
+@endif
+<link rel="canonical" href="{{ $plotUrl }}">
+
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json">
+{!! json_encode($removeNulls([
+    '@context' => 'https://schema.org',
+    '@graph' => $schemaGraph
+]), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) !!}
+</script>
+@endpush
+
 @section('content')
     <!-- Breadcrumb section Start-->
     @php
@@ -627,6 +910,97 @@
                             </ul>
                         </div>
 
+                        <!-- Related Venues in Same Area -->
+                        @if(!empty($relatedPlots) && $relatedPlots->count() > 0)
+                        <div class="related-venues-area mb-60">
+                            <div class="section-title mb-40">
+                                <h4>More {{ $plot->category ? $plot->category->name : 'Venues' }} in {{ $plot->area ? $plot->area . ', ' . $plot->city : $plot->city }}</h4>
+                                <p>Explore other amazing {{ strtolower($plot->category ? $plot->category->name : 'venues') }} in the same {{ $plot->area ? 'area' : 'city' }}</p>
+                            </div>
+                            <div class="related-venues-slider">
+                                <div class="swiper related-venues-carousel">
+                                    <div class="swiper-wrapper">
+                                        @foreach($relatedPlots as $relatedPlot)
+                                        <div class="swiper-slide">
+                                            <div class="package-card enhanced-venue-card">
+                                                <div class="package-img-wrap">
+                                                    <a href="{{ route('party-plots.show', $relatedPlot->slug) }}" class="package-img">
+                                                        <div class="no-image-placeholder">
+                                                            <i class="fa-solid fa-image"></i>
+                                                            <p>No Image Available</p>
+                                                        </div>
+                                                        <div class="image-overlay"></div>
+                                                    </a>
+                                                    @if($relatedPlot->verified)
+                                                    <div class="batch">
+                                                        <span class="verified-badge"><i class="fa-solid fa-check-circle"></i> Verified</span>
+                                                    </div>
+                                                    @endif
+                                                    @if($relatedPlot->price_range_min || $relatedPlot->price_range_max)
+                                                    <div class="price-badge">
+                                                        <span>₹{{ number_format($relatedPlot->price_range_min ?? $relatedPlot->price_range_max) }}</span>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                                <div class="package-content">
+                                                    <h5><a href="{{ route('party-plots.show', $relatedPlot->slug) }}">{{ $relatedPlot->name }}</a></h5>
+                                                    @if($relatedPlot->description)
+                                                    <p>{{ Str::limit(strip_tags($relatedPlot->description), 100) }}</p>
+                                                    @endif
+                                                    <div class="location-and-time">
+                                                        <div class="location">
+                                                            <i class="fa-solid fa-location-dot"></i>
+                                                            <a href="{{ route('party-plots.index', ['city' => $relatedPlot->city]) }}">{{ $relatedPlot->city }}</a>
+                                                        </div>
+                                                        @if($relatedPlot->category)
+                                                        <i class="fa-solid fa-circle" style="font-size: 6px;"></i>
+                                                        <span>{{ $relatedPlot->category->name }}</span>
+                                                        @endif
+                                                    </div>
+                                                    <ul class="package-info">
+                                                        @if($relatedPlot->capacity_min && $relatedPlot->capacity_max)
+                                                        <li>
+                                                            <i class="fa-solid fa-users"></i>
+                                                            <span>{{ number_format($relatedPlot->capacity_min) }} - {{ number_format($relatedPlot->capacity_max) }} guests</span>
+                                                        </li>
+                                                        @endif
+                                                        @if($relatedPlot->google_rating)
+                                                        <li>
+                                                            <i class="fa-solid fa-star"></i>
+                                                            <span>{{ number_format($relatedPlot->google_rating, 1) }} Rating</span>
+                                                        </li>
+                                                        @endif
+                                                    </ul>
+                                                    <div class="btn-and-price-area">
+                                                        <a href="{{ route('party-plots.show', $relatedPlot->slug) }}" class="primary-btn1">
+                                                            <span>
+                                                                View Details
+                                                                <i class="fa-solid fa-arrow-right"></i>
+                                                            </span>
+                                                            <span>
+                                                                View Details
+                                                                <i class="fa-solid fa-arrow-right"></i>
+                                                            </span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="slider-btn-grp">
+                                        <div class="swiper-button-prev related-venues-prev">
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                        </div>
+                                        <div class="swiper-button-next related-venues-next">
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- FAQ Section -->
                         <div class="faq-area mb-60">
                             <h4>Frequently Asked & Question</h4>
@@ -826,19 +1200,17 @@
                                 <h2><span>Get In</span> Touch!</h2>
                                 <ul>
                                     @if (count($phoneNumbers) > 0)
-                                        <li>
-                                            <svg width="18" height="18" viewBox="0 0 18 18"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="9" cy="9" r="8.5" />
-                                                <path
-                                                    d="M13.6193 7.0722L8.05903 12.6355C7.97043 12.7211 7.85813 12.7655 7.74593 12.7655C7.68772 12.7656 7.63008 12.7541 7.57632 12.7318C7.52256 12.7095 7.47376 12.6768 7.43272 12.6355L4.38073 9.5835C4.20642 9.4121 4.20642 9.1315 4.38073 8.9572L5.45912 7.8758C5.62462 7.7104 5.92002 7.7104 6.08552 7.8758L7.74593 9.5362L11.9146 5.3645C11.9557 5.32334 12.0045 5.29068 12.0581 5.26837C12.1118 5.24606 12.1694 5.23455 12.2275 5.2345C12.3456 5.2345 12.4579 5.2818 12.5406 5.3645L13.619 6.446C13.7936 6.6203 13.7936 6.9009 13.6193 7.0722Z" />
-                                            </svg>
-                                            @foreach ($phoneNumbers as $index => $phone)
-                                                @if ($index > 0)
-                                                    ,
-                                                @endif{{ $phone }}
-                                            @endforeach
-                                        </li>
+                                        @foreach ($phoneNumbers as $phone)
+                                            <li>
+                                                <svg width="18" height="18" viewBox="0 0 18 18"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <circle cx="9" cy="9" r="8.5" />
+                                                    <path
+                                                        d="M13.6193 7.0722L8.05903 12.6355C7.97043 12.7211 7.85813 12.7655 7.74593 12.7655C7.68772 12.7656 7.63008 12.7541 7.57632 12.7318C7.52256 12.7095 7.47376 12.6768 7.43272 12.6355L4.38073 9.5835C4.20642 9.4121 4.20642 9.1315 4.38073 8.9572L5.45912 7.8758C5.62462 7.7104 5.92002 7.7104 6.08552 7.8758L7.74593 9.5362L11.9146 5.3645C11.9557 5.32334 12.0045 5.29068 12.0581 5.26837C12.1118 5.24606 12.1694 5.23455 12.2275 5.2345C12.3456 5.2345 12.4579 5.2818 12.5406 5.3645L13.619 6.446C13.7936 6.6203 13.7936 6.9009 13.6193 7.0722Z" />
+                                                </svg>
+                                                <span class="contact-text">{{ $phone }}</span>
+                                            </li>
+                                        @endforeach
                                     @endif
                                     @if ($plot->email)
                                         <li>
@@ -848,13 +1220,13 @@
                                                 <path
                                                     d="M13.6193 7.0722L8.05903 12.6355C7.97043 12.7211 7.85813 12.7655 7.74593 12.7655C7.68772 12.7656 7.63008 12.7541 7.57632 12.7318C7.52256 12.7095 7.47376 12.6768 7.43272 12.6355L4.38073 9.5835C4.20642 9.4121 4.20642 9.1315 4.38073 8.9572L5.45912 7.8758C5.62462 7.7104 5.92002 7.7104 6.08552 7.8758L7.74593 9.5362L11.9146 5.3645C11.9557 5.32334 12.0045 5.29068 12.0581 5.26837C12.1118 5.24606 12.1694 5.23455 12.2275 5.2345C12.3456 5.2345 12.4579 5.2818 12.5406 5.3645L13.619 6.446C13.7936 6.6203 13.7936 6.9009 13.6193 7.0722Z" />
                                             </svg>
-                                            {{ $plot->email }}
+                                            <span class="contact-text"><a href="mailto:{{ $plot->email }}" class="contact-link">{{ $plot->email }}</a></span>
                                         </li>
                                     @endif
                                     @if ($plot->full_address || $plot->city)
                                         <li>
                                             <i class="fa fa-map-marker"></i>
-                                            {{ $plot->full_address }}{{ $plot->city ? ', ' . $plot->city : '' }}{{ $plot->area ? ', ' . $plot->area : '' }}
+                                            <span class="contact-text">{{ $plot->full_address }}{{ $plot->city ? ', ' . $plot->city : '' }}{{ $plot->area ? ', ' . $plot->area : '' }}</span>
                                         </li>
                                     @endif
                                 </ul>
@@ -1541,17 +1913,26 @@
 
             .contact-info-banner-wrap ul li {
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
                 gap: 12px;
                 margin-bottom: 15px;
                 font-size: 15px;
                 color: var(--text-color);
+                line-height: 1.6;
             }
 
-            .contact-info-banner-wrap ul li svg {
+            .contact-info-banner-wrap ul li svg,
+            .contact-info-banner-wrap ul li i {
                 min-width: 18px;
                 width: 18px;
                 height: 18px;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+
+            .contact-info-banner-wrap ul li i {
+                color: var(--primary-color1);
+                font-size: 16px;
             }
 
             .contact-info-banner-wrap ul li svg circle {
@@ -1563,8 +1944,74 @@
                 fill: var(--primary-color1);
             }
 
+            .contact-info-banner-wrap .contact-text {
+                flex: 1;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                word-break: break-word;
+                min-width: 0;
+            }
+
+            .contact-info-banner-wrap .contact-link {
+                color: var(--text-color);
+                text-decoration: none;
+                transition: color 0.3s ease;
+                word-break: break-all;
+            }
+
+            .contact-info-banner-wrap .contact-link:hover {
+                color: var(--primary-color1);
+                text-decoration: underline;
+            }
+
             .contact-action-area {
                 margin-top: 20px;
+            }
+
+            /* Responsive improvements for Get In Touch section */
+            @media (max-width: 768px) {
+                .contact-info-banner-wrap {
+                    padding: 20px 18px;
+                    margin: 30px 0;
+                }
+
+                .contact-info-banner-wrap h2 {
+                    font-size: 20px;
+                    margin-bottom: 15px;
+                }
+
+                .contact-info-banner-wrap ul li {
+                    font-size: 14px;
+                    margin-bottom: 12px;
+                    gap: 10px;
+                }
+
+                .contact-info-banner-wrap ul li svg,
+                .contact-info-banner-wrap ul li i {
+                    min-width: 16px;
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .contact-info-banner-wrap {
+                    padding: 18px 15px;
+                }
+
+                .contact-info-banner-wrap h2 {
+                    font-size: 18px;
+                }
+
+                .contact-info-banner-wrap ul li {
+                    font-size: 13px;
+                    flex-wrap: wrap;
+                }
+
+                .contact-info-banner-wrap .contact-text {
+                    width: 100%;
+                    margin-top: 4px;
+                }
             }
 
             .contact-bg {
@@ -2098,6 +2545,66 @@
         <script>
             // Initialize banner slider
             $(document).ready(function() {
+                // Wait for Swiper to be available
+                function initRelatedVenuesCarousel() {
+                    if (typeof Swiper !== 'undefined') {
+                        var relatedVenuesCarousel = document.querySelector('.related-venues-carousel');
+                        if (relatedVenuesCarousel && !relatedVenuesCarousel.swiper) {
+                            try {
+                                var relatedVenuesSlider = new Swiper('.related-venues-carousel', {
+                                    slidesPerView: 1,
+                                    spaceBetween: 24,
+                                    loop: false,
+                                    autoplay: {
+                                        delay: 3000,
+                                        disableOnInteraction: false,
+                                    },
+                                    navigation: {
+                                        nextEl: '.related-venues-next',
+                                        prevEl: '.related-venues-prev',
+                                    },
+                                    breakpoints: {
+                                        320: {
+                                            slidesPerView: 1,
+                                            spaceBetween: 15,
+                                        },
+                                        576: {
+                                            slidesPerView: 2,
+                                            spaceBetween: 20,
+                                        },
+                                        768: {
+                                            slidesPerView: 2,
+                                            spaceBetween: 24,
+                                        },
+                                        992: {
+                                            slidesPerView: 3,
+                                            spaceBetween: 24,
+                                        },
+                                        1200: {
+                                            slidesPerView: 3,
+                                            spaceBetween: 24,
+                                        },
+                                    },
+                                });
+                                console.log('Related venues carousel initialized');
+                            } catch (e) {
+                                console.error('Error initializing related venues carousel:', e);
+                            }
+                        }
+                    } else {
+                        // Retry after a short delay if Swiper is not loaded yet
+                        setTimeout(initRelatedVenuesCarousel, 100);
+                    }
+                }
+                
+                // Initialize related venues carousel
+                initRelatedVenuesCarousel();
+                
+                // Also try after window load
+                window.addEventListener('load', function() {
+                    initRelatedVenuesCarousel();
+                });
+                
                 if (typeof Swiper !== 'undefined') {
                     var bannerSlider = new Swiper(".home2-banner-slider", {
                         slidesPerView: 1,
@@ -2517,6 +3024,130 @@
 
     @push('styles')
     <style>
+        /* No Image Placeholder for Venue Cards */
+        .enhanced-venue-card .no-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px 12px 0 0;
+            color: white;
+            text-align: center;
+        }
+
+        .enhanced-venue-card .no-image-placeholder i {
+            font-size: 36px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .enhanced-venue-card .no-image-placeholder p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        /* Related Venues Carousel Styles */
+        .related-venues-area {
+            margin-bottom: 60px;
+        }
+        
+        .related-venues-area .section-title {
+            margin-bottom: 40px;
+        }
+        
+        .related-venues-area .section-title h4 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--title-color, #1f2937);
+        }
+        
+        .related-venues-area .section-title p {
+            color: var(--text-color, #6b7280);
+            margin: 0;
+        }
+        
+        .related-venues-slider {
+            position: relative;
+        }
+        
+        .related-venues-carousel {
+            padding-bottom: 20px;
+        }
+        
+        .related-venues-carousel .swiper-slide {
+            height: auto;
+        }
+        
+        .related-venues-slider .slider-btn-grp {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 40px;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .related-venues-slider .slider-btn-grp .swiper-button-next,
+        .related-venues-slider .slider-btn-grp .swiper-button-prev {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            margin: 0;
+            background: var(--primary-color1, #1781FE);
+            border-radius: 50%;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .related-venues-slider .slider-btn-grp .swiper-button-next:hover,
+        .related-venues-slider .slider-btn-grp .swiper-button-prev:hover {
+            background: var(--primary-color2, #0d6efd);
+            transform: scale(1.1);
+        }
+        
+        .related-venues-slider .slider-btn-grp .swiper-button-next::after,
+        .related-venues-slider .slider-btn-grp .swiper-button-prev::after {
+            display: none;
+        }
+        
+        .related-venues-slider .slider-btn-grp .swiper-button-next i,
+        .related-venues-slider .slider-btn-grp .swiper-button-prev i {
+            font-size: 18px;
+        }
+        
+        @media (max-width: 768px) {
+            .related-venues-area .section-title h4 {
+                font-size: 24px;
+            }
+            
+            .related-venues-slider .slider-btn-grp {
+                margin-top: 30px;
+                gap: 35px;
+            }
+            
+            .related-venues-slider .slider-btn-grp .swiper-button-next,
+            .related-venues-slider .slider-btn-grp .swiper-button-prev {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .related-venues-slider .slider-btn-grp {
+                gap: 30px;
+                margin-top: 25px;
+            }
+        }
         /* Floating WhatsApp Button */
         .floating-whatsapp-btn {
             position: fixed;

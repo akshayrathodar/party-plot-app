@@ -260,6 +260,29 @@ class SeoLinkController extends Controller
         }
     }
 
+    /**
+     * Delete all SEO links
+     */
+    public function deleteAll()
+    {
+        try {
+            $count = SeoLink::count();
+            
+            if ($count === 0) {
+                return redirect()->route('admin.seo-links.index')
+                                ->with('info', 'No SEO links to delete.');
+            }
+
+            SeoLink::truncate();
+
+            return redirect()->route('admin.seo-links.index')
+                            ->with('success', "Successfully deleted all {$count} SEO link(s).");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Error deleting SEO links: ' . $e->getMessage());
+        }
+    }
+
     // ==================== TEMPLATES ====================
 
     /**

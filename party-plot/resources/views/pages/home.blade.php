@@ -4072,7 +4072,7 @@
     <!-- home1 faq Section End-->
 
     <!-- home1 Counter Section Start-->
-    <div class="counter-section">
+    <!-- <div class="counter-section">
         <div class="container">
             <div class="row gy-md-5 gy-4">
                 <div class="col-lg-3 col-sm-6 divider">
@@ -4159,7 +4159,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- home1 Counter Section End-->
 
     <!-- home1 Footer Section Start-->

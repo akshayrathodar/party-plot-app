@@ -79,10 +79,10 @@
                             <div class="widget-title">
                                 <h5>Category</h5>
                             </div>
-                            <div class="checkbox-container">
+                            <div class="checkbox-container scrollable-filter">
                                 <ul>
-                                    @foreach($categories as $category)
-                                    <li>
+                                    @foreach($categories as $index => $category)
+                                    <li class="{{ $index >= 7 ? 'filter-item-hidden' : '' }}">
                                         <label class="containerss">
                                             <input type="checkbox" name="category" value="{{ $category->id }}"
                                                 {{ request('category') == $category->id || $seoLink->category_id == $category->id ? 'checked' : '' }}>
@@ -100,10 +100,10 @@
                             <div class="widget-title">
                                 <h5>Location</h5>
                             </div>
-                            <div class="checkbox-container">
+                            <div class="checkbox-container scrollable-filter">
                                 <ul>
-                                    @foreach($cities as $city)
-                                    <li>
+                                    @foreach($cities as $index => $city)
+                                    <li class="{{ $index >= 7 ? 'filter-item-hidden' : '' }}">
                                         <label class="containerss">
                                             <input type="checkbox" name="city" value="{{ $city }}"
                                                 {{ request('city') == $city || $seoLink->city == $city ? 'checked' : '' }}>
@@ -122,10 +122,10 @@
                             <div class="widget-title">
                                 <h5>Area</h5>
                             </div>
-                            <div class="checkbox-container">
+                            <div class="checkbox-container scrollable-filter">
                                 <ul>
-                                    @foreach($areas as $area)
-                                    <li>
+                                    @foreach($areas as $index => $area)
+                                    <li class="{{ $index >= 7 ? 'filter-item-hidden' : '' }}">
                                         <label class="containerss">
                                             <input type="checkbox" name="area" value="{{ $area }}"
                                                 {{ request('area') == $area || $seoLink->area == $area ? 'checked' : '' }}>
@@ -253,89 +253,10 @@
                             <div class="package-card enhanced-venue-card">
                                 <div class="package-img-wrap">
                                     <a href="{{ route('party-plots.show', $plot->slug) }}" class="package-img">
-                                        @php
-                                            $imageUrl = '';
-                                            // First try featured image
-                                            if ($plot->featured_image && trim($plot->featured_image) !== '') {
-                                                if (filter_var($plot->featured_image, FILTER_VALIDATE_URL)) {
-                                                    $imageUrl = $plot->featured_image;
-                                                } elseif (strpos($plot->featured_image, 'http') === 0) {
-                                                    $imageUrl = $plot->featured_image;
-                                                } else {
-                                                    // Check if it's stored in uploads/admin/party-plots (from admin upload)
-                                                    $adminPath = 'uploads/admin/party-plots/' . $plot->featured_image;
-                                                    if (file_exists(public_path($adminPath))) {
-                                                        $imageUrl = asset($adminPath);
-                                                    }
-                                                    // Check other possible paths
-                                                    elseif (file_exists(public_path($plot->featured_image))) {
-                                                        $imageUrl = asset($plot->featured_image);
-                                                    } elseif (file_exists(storage_path('app/public/' . $plot->featured_image))) {
-                                                        $imageUrl = asset('storage/' . $plot->featured_image);
-                                                    } elseif (file_exists(public_path('theme/' . $plot->featured_image))) {
-                                                        $imageUrl = asset('theme/' . $plot->featured_image);
-                                                    }
-                                                }
-                                            }
-
-                                            // If no featured image, try gallery images
-                                            if (empty($imageUrl) && $plot->gallery_images && is_array($plot->gallery_images) && count($plot->gallery_images) > 0) {
-                                                foreach ($plot->gallery_images as $galleryImg) {
-                                                    if (filter_var($galleryImg, FILTER_VALIDATE_URL)) {
-                                                        $imageUrl = $galleryImg;
-                                                        break;
-                                                    } elseif (strpos($galleryImg, 'http') === 0) {
-                                                        $imageUrl = $galleryImg;
-                                                        break;
-                                                    } else {
-                                                        // Check if it's stored in uploads/admin/party-plots (from admin upload)
-                                                        $adminPath = 'uploads/admin/party-plots/' . $galleryImg;
-                                                        if (file_exists(public_path($adminPath))) {
-                                                            $imageUrl = asset($adminPath);
-                                                            break;
-                                                        }
-                                                        // Check other possible paths
-                                                        elseif (file_exists(public_path($galleryImg))) {
-                                                            $imageUrl = asset($galleryImg);
-                                                            break;
-                                                        } elseif (file_exists(storage_path('app/public/' . $galleryImg))) {
-                                                            $imageUrl = asset('storage/' . $galleryImg);
-                                                            break;
-                                                        } elseif (file_exists(public_path('theme/' . $galleryImg))) {
-                                                            $imageUrl = asset('theme/' . $galleryImg);
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            // If still no image, use demo/placeholder image
-                                            if (empty($imageUrl)) {
-                                                // Try to find a demo image from theme
-                                                $demoImages = [
-                                                    'theme/assets/img/home1/tour-package-img1.jpg',
-                                                    'theme/assets/img/home1/tour-package-img2.jpg',
-                                                    'theme/assets/img/home1/tour-package-img3.jpg',
-                                                    'theme/assets/img/home1/destination-img1.jpg',
-                                                    'theme/assets/img/home1/destination-img2.jpg',
-                                                ];
-                                                
-                                                foreach ($demoImages as $demoImg) {
-                                                    if (file_exists(public_path($demoImg))) {
-                                                        $imageUrl = asset($demoImg);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        @endphp
-                                        @if($imageUrl)
-                                            <img src="{{ $imageUrl }}" alt="{{ $plot->name }}" class="venue-card-image">
-                                        @else
-                                            <div class="no-image-placeholder">
-                                                <i class="fa-solid fa-image"></i>
-                                                <p>No Image Available</p>
-                                            </div>
-                                        @endif
+                                        <div class="no-image-placeholder">
+                                            <i class="fa-solid fa-image"></i>
+                                            <p>No Image Available</p>
+                                        </div>
                                         <div class="image-overlay"></div>
                                     </a>
                                     @if($plot->verified)
@@ -446,6 +367,46 @@
 
 @push('styles')
 <style>
+    /* Scrollable Filter Container */
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter {
+        max-height: 280px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter ul li {
+        margin-bottom: 8px;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter ul li.filter-item-hidden {
+        display: block;
+    }
+
+    /* Custom Scrollbar for Filter Containers */
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    .package-sidebar-area .sidebar-wrapper .single-widgets .checkbox-container.scrollable-filter::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
     .active-filters-info {
         display: flex;
         flex-wrap: wrap;

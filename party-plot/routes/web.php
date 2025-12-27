@@ -166,22 +166,27 @@ Route::prefix('admin')->group(function () {
             Route::get('/', [SeoLinkController::class, 'index'])->name('index');
             Route::get('/create', [SeoLinkController::class, 'create'])->name('create');
             Route::post('/', [SeoLinkController::class, 'store'])->name('store');
-            Route::get('/{id}/edit', [SeoLinkController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [SeoLinkController::class, 'update'])->name('update');
-            Route::delete('/{id}', [SeoLinkController::class, 'destroy'])->name('destroy');
-
-            // Bulk Generate
+            
+            // Delete All - Must come before parameterized routes
+            Route::delete('/delete-all', [SeoLinkController::class, 'deleteAll'])->name('delete-all');
+            
+            // Bulk Generate - Must come before parameterized routes
             Route::get('/bulk-generate', [SeoLinkController::class, 'bulkGenerate'])->name('bulk-generate');
             Route::post('/bulk-generate/preview', [SeoLinkController::class, 'previewBulkGenerate'])->name('bulk-generate.preview');
             Route::post('/bulk-generate/execute', [SeoLinkController::class, 'executeBulkGenerate'])->name('bulk-generate.execute');
 
-            // Templates
+            // Templates - Must come before parameterized routes
             Route::get('/templates', [SeoLinkController::class, 'templates'])->name('templates');
             Route::get('/templates/create', [SeoLinkController::class, 'createTemplate'])->name('templates.create');
             Route::post('/templates', [SeoLinkController::class, 'storeTemplate'])->name('templates.store');
             Route::get('/templates/{id}/edit', [SeoLinkController::class, 'editTemplate'])->name('templates.edit');
             Route::put('/templates/{id}', [SeoLinkController::class, 'updateTemplate'])->name('templates.update');
             Route::delete('/templates/{id}', [SeoLinkController::class, 'destroyTemplate'])->name('templates.destroy');
+            
+            // Parameterized routes - Must come last
+            Route::get('/{id}/edit', [SeoLinkController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [SeoLinkController::class, 'update'])->name('update');
+            Route::delete('/{id}', [SeoLinkController::class, 'destroy'])->name('destroy');
         });
 
         // Common Routes

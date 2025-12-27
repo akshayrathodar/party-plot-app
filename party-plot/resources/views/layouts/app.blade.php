@@ -8,6 +8,8 @@
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <title>@yield('title', 'Party Plot Listing Platform')</title>
 
+    @stack('meta')
+
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('theme/assets/img/fav-icon.svg') }}" type="image/gif" sizes="20x20">
 

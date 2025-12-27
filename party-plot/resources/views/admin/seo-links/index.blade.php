@@ -25,6 +25,15 @@
                             <a href="{{ route('admin.seo-links.templates') }}" class="btn btn-info btn-sm">
                                 <i class="fa fa-file-alt"></i> Templates
                             </a>
+                            @if($seoLinks->total() > 0)
+                            <form action="{{ route('admin.seo-links.delete-all') }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete ALL SEO links? This action cannot be undone!');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fa fa-trash"></i> Delete All
+                                </button>
+                            </form>
+                            @endif
                         </div>
                     </div>
                 </div>

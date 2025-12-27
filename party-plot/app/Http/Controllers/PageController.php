@@ -46,11 +46,14 @@ class PageController extends Controller
 
         // Fetch categories with counts for homepage display
         $categoriesWithCounts = \App\Models\Category::active()
+            ->whereHas('partyPlots', function($query) {
+                $query->where('status', 'active')
+                    ->whereIn('listing_status', ['approved', 'pending']);
+            })
             ->withCount(['partyPlots' => function($query) {
                 $query->where('status', 'active')
                     ->whereIn('listing_status', ['approved', 'pending']);
             }])
-            ->having('party_plots_count', '>', 0)
             ->ordered()
             ->limit(10)
             ->get();
@@ -239,7 +242,8 @@ class PageController extends Controller
      */
     public function partyPlotDetails($slug)
     {
-        $plot = PartyPlot::where('slug', $slug)
+        $plot = PartyPlot::with('category')
+            ->where('slug', $slug)
             ->where('status', 'active')
             ->whereIn('listing_status', ['approved', 'pending'])
             ->firstOrFail();
@@ -247,7 +251,38 @@ class PageController extends Controller
         // Increment visitors count
         $plot->increment('visitors');
 
-        return view('front.party-plots.show', compact('plot'));
+        // Get related party plots: same category + same area, or same category + same city
+        $relatedPlots = collect();
+        
+        // First priority: Same category AND same area
+        if ($plot->category_id && $plot->area && trim($plot->area) !== '') {
+            $relatedPlots = PartyPlot::with('category')
+                ->where('status', 'active')
+                ->whereIn('listing_status', ['approved', 'pending'])
+                ->where('id', '!=', $plot->id)
+                ->where('category_id', $plot->category_id)
+                ->where('area', $plot->area)
+                ->orderBy('visitors', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+        }
+        
+        // Fallback: Same category AND same city (if no area matches or area not available)
+        if ($relatedPlots->isEmpty() && $plot->category_id && $plot->city && trim($plot->city) !== '') {
+            $relatedPlots = PartyPlot::with('category')
+                ->where('status', 'active')
+                ->whereIn('listing_status', ['approved', 'pending'])
+                ->where('id', '!=', $plot->id)
+                ->where('category_id', $plot->category_id)
+                ->where('city', $plot->city)
+                ->orderBy('visitors', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+        }
+
+        return view('front.party-plots.show', compact('plot', 'relatedPlots'));
     }
 
     /**
